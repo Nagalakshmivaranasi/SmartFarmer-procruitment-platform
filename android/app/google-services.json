@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "494271730421",
+    "project_id": "smartfarmerprocruitment",
+    "storage_bucket": "smartfarmerprocruitment.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:494271730421:android:ffad573a06440b759b2bbc",
+        "android_client_info": {
+          "package_name": "com.example.smart_farmer_procurement"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAt4xADkQ86C9vZq6fG1IzLECZ1Tmiv3Z4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
