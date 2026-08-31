@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'services/auth_service.dart';
+import 'models/user_model.dart';
 
 void main() async {
-  // Required before calling any async plugins like Firebase
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Initialize Firebase
+  // Initialize Firebase using google-services.json configuration
   await Firebase.initializeApp();
 
   runApp(const MyApp());
@@ -17,58 +18,29 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Smart Farmer Procurement',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
-        useMaterial3: true,
-      ),
-      home: const MyHomePage(title: 'Smart Farmer Procurement'),
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text('Firebase Initialized Successfully!'),
-            const SizedBox(height: 10),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
+      home: Scaffold(
+        appBar: AppBar(title: const Text('Backend Database Test')),
+        body: Center(
+          child: ElevatedButton(
+            onPressed: () async {
+              try {
+                // Test registration with AuthService and saving user to Firestore
+                AuthService authService = AuthService();
+                await authService.signUpWithEmail(
+                  email: 'testfarmer@gmail.com',
+                  password: 'TestPassword123',
+                  name: 'Test Farmer',
+                  phoneNumber: '9876543210',
+                  role: UserRole.farmer,
+                );
+                debugPrint('SUCCESS: User registered and written to Firestore!');
+              } catch (e) {
+                debugPrint('ERROR testing Firebase: $e');
+              }
+            },
+            child: const Text('Run Firebase Test'),
+          ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
       ),
     );
   }
