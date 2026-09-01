@@ -9,7 +9,7 @@ class BookingModel {
   final String bookingDate;
   final String slotTime;
   final int tokenNumber;
-  final String status; // booked, arrived, under_inspection, quality_checked, deal_offered, payment_processing, completed, cancelled, rescheduled
+  final String status;
   final DateTime createdAt;
 
   BookingModel({
@@ -48,6 +48,7 @@ class BookingModel {
 
   Map<String, dynamic> toMap() {
     return {
+      'bookingId': bookingId,
       'farmerId': farmerId,
       'farmerName': farmerName,
       'centreId': centreId,

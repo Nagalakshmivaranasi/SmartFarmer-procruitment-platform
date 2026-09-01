@@ -1,70 +1,63 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../models/user_model.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:smart_farmer_procurement/models/user_model.dart';
+
+enum UserRole { farmer, officer }
 
 class AuthService {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth;
+  final FirebaseFirestore _firestore;
 
-  // 1. Get current logged-in Firebase user
+  AuthService({
+    FirebaseAuth? auth,
+    FirebaseFirestore? firestore,
+  })  : _auth = auth ?? FirebaseAuth.instance,
+        _firestore = firestore ?? FirebaseFirestore.instance;
+
   User? get currentUser => _auth.currentUser;
 
-  // Stream of auth changes (logged in / logged out state)
   Stream<User?> get authStateChanges => _auth.authStateChanges();
 
-  // 2. Sign Up with Email, Password, and Profile details
-  Future<UserCredential> signUpWithEmail({
-    required String email,
-    required String password,
+  // Create or register user profile
+  Future<void> registerUser({
+    required String uid,
     required String name,
     required String phoneNumber,
     required UserRole role,
+    String? farmerId,
+    String? officerId,
+    String? aadhaarNumber,
+    String? state,
+    String? district,
+    String? centreId,
   }) async {
-    // Create user in Firebase Auth
-    UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
-      email: email.trim(),
-      password: password.trim(),
-    );
-
-    String uid = userCredential.user!.uid;
-
-    // Build user profile model
-    UserModel newUser = UserModel(
+    final userModel = UserModel(
       uid: uid,
-      email: email.trim(),
-      name: name.trim(),
-      phoneNumber: phoneNumber.trim(),
-      role: role,
+      role: role.name,
+      name: name,
+      phoneNumber: phoneNumber,
+      farmerId: farmerId,
+      officerId: officerId,
+      aadhaarNumber: aadhaarNumber,
+      state: state,
+      district: district,
+      centreId: centreId,
       createdAt: DateTime.now(),
     );
 
-    // Save user profile in Firestore 'users' collection
-    await _firestore.collection('users').doc(uid).set(newUser.toMap());
-
-    return userCredential;
+    await _firestore.collection('users').doc(uid).set(userModel.toMap());
   }
 
-  // 3. Sign In with Email & Password
-  Future<UserCredential> signInWithEmail({
-    required String email,
-    required String password,
-  }) async {
-    return await _auth.signInWithEmailAndPassword(
-      email: email.trim(),
-      password: password.trim(),
-    );
-  }
-
-  // 4. Fetch User Profile Data from Firestore
-  Future<UserModel?> getUserProfile(String uid) async {
-    DocumentSnapshot doc = await _firestore.collection('users').doc(uid).get();
-    if (doc.exists) {
-      return UserModel.fromSnapshot(doc);
+  // Fetch current user model
+  Future<UserModel?> getUserModel(String uid) async {
+    final doc = await _firestore.collection('users').doc(uid).get();
+    if (doc.exists && doc.data() != null) {
+      return UserModel.fromMap(doc.data()!, doc.id);
     }
     return null;
   }
 
-  // 5. Sign Out
+  // Sign out
   Future<void> signOut() async {
     await _auth.signOut();
   }
