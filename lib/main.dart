@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
-import 'services/auth_service.dart';
-import 'models/user_model.dart';
 
-void main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  
+  debugPrint('Initializing app...');
+  
   runApp(const MyApp());
 }
 
@@ -18,36 +14,14 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(title: const Text('SmartFarmer Firebase Test')),
+      title: 'Smart Farmer Procurement',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
+        useMaterial3: true,
+      ),
+      home: const Scaffold(
         body: Center(
-          child: ElevatedButton(
-            onPressed: () async {
-              // Immediate console feedback to confirm click
-              print('--- BUTTON CLICKED: STARTING FIREBASE TEST ---');
-              
-              try {
-                AuthService authService = AuthService();
-                final testEmail = 'farmer_${DateTime.now().millisecondsSinceEpoch}@gmail.com';
-                
-                print('Attempting signup for: $testEmail');
-                
-                await authService.signUpWithEmail(
-                  email: testEmail,
-                  password: 'TestPassword123',
-                  name: 'Test Farmer',
-                  phoneNumber: '9876543210',
-                  role: UserRole.farmer,
-                );
-                
-                print('SUCCESS: Registered $testEmail and wrote to Firestore!');
-              } catch (e, stack) {
-                print('ERROR testing Firebase: $e');
-                print('STACK TRACE: $stack');
-              }
-            },
-            child: const Text('Run Firebase Test'),
-          ),
+          child: Text('Smart Farmer Procurement Platform'),
         ),
       ),
     );
