@@ -46,3 +46,19 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+# Temporary build folders
+build/
+.dart_tool/
+.pub/
+.pub-cache/
+
+# Sensitive Firebase credentials
+android/app/google-services.json
+lib/firebase_options.dart
+
+# IDE files
+.idea/
+.vscode/
+
+# Backup folders
+android_backup/
