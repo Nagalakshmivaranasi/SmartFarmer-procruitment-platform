@@ -1,48 +1,60 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../models/centre_model.dart';
+import '../../../services/local_database_service.dart';
 import 'book_slot_step4_date_screen.dart';
 
-class CenterOption {
-  final String id;
-  final String name;
-  final String distance;
-
-  CenterOption({required this.id, required this.name, required this.distance});
-}
-
 class BookSlotStep3CenterScreen extends StatefulWidget {
-  const BookSlotStep3CenterScreen({super.key});
+  final String crop;
+  final double quantityQuintal;
+  final String state;
+  final String district;
+
+  const BookSlotStep3CenterScreen({
+    super.key,
+    required this.crop,
+    required this.quantityQuintal,
+    required this.state,
+    required this.district,
+  });
 
   @override
   State<BookSlotStep3CenterScreen> createState() => _BookSlotStep3CenterScreenState();
 }
 
 class _BookSlotStep3CenterScreenState extends State<BookSlotStep3CenterScreen> {
-  String _selectedCenterId = 'shivpuri';
+  final _database = IsarDatabaseService();
+  CentreModel? _selectedCenter;
+  List<CentreModel> _centers = [];
+  bool _isLoading = true;
 
-  final List<CenterOption> _centers = [
-    CenterOption(id: 'shivpuri', name: 'Shivpuri Procurement Center', distance: '5.2 km'),
-    CenterOption(id: 'pichhore', name: 'Pichhore Procurement Center', distance: '12.8 km'),
-    CenterOption(id: 'kolaras', name: 'Kolaras Procurement Center', distance: '18.4 km'),
-    CenterOption(id: 'karera', name: 'Karera Procurement Center', distance: '22.7 km'),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadCenters();
+  }
+
+  Future<void> _loadCenters() async {
+    final loaded = await _database.centresByDistrict(widget.state, widget.district);
+    setState(() {
+      _centers = loaded;
+      if (_centers.isNotEmpty) {
+        _selectedCenter = _centers.first;
+      }
+      _isLoading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Book Slot'),
+        title: const Text('Book Slot (Step 3 of 6)'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () {},
-          ),
-        ],
       ),
       body: SafeArea(
         child: Padding(
@@ -53,9 +65,9 @@ class _BookSlotStep3CenterScreenState extends State<BookSlotStep3CenterScreen> {
               _buildStepTracker(currentStep: 3),
               const SizedBox(height: 24),
 
-              const Text(
-                'Select Procurement Center',
-                style: TextStyle(
+              Text(
+                'Procurement Centers in ${widget.district}, ${widget.state}',
+                style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: AppColors.textPrimary,
@@ -63,70 +75,89 @@ class _BookSlotStep3CenterScreenState extends State<BookSlotStep3CenterScreen> {
               ),
               const SizedBox(height: 12),
 
-              Expanded(
-                child: ListView.separated(
-                  itemCount: _centers.length,
-                  separatorBuilder: (context, index) => const SizedBox(height: 10),
-                  itemBuilder: (context, index) {
-                    final center = _centers[index];
-                    final isSelected = center.id == _selectedCenterId;
-                    return GestureDetector(
-                      onTap: () => setState(() => _selectedCenterId = center.id),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(
-                            color: isSelected ? AppColors.primary : AppColors.border,
-                            width: isSelected ? 2 : 1,
+              if (_isLoading)
+                const Expanded(child: Center(child: CircularProgressIndicator()))
+              else if (_centers.isEmpty)
+                const Expanded(
+                  child: Center(
+                    child: Text('No procurement centers found in this district.'),
+                  ),
+                )
+              else
+                Expanded(
+                  child: ListView.separated(
+                    itemCount: _centers.length,
+                    separatorBuilder: (context, index) => const SizedBox(height: 10),
+                    itemBuilder: (context, index) {
+                      final center = _centers[index];
+                      final isSelected = _selectedCenter?.centreId == center.centreId;
+                      return GestureDetector(
+                        onTap: () => setState(() => _selectedCenter = center),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: isSelected ? AppColors.primary : AppColors.border,
+                              width: isSelected ? 2 : 1,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      center.centreName,
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                        color: isSelected ? AppColors.primary : AppColors.textPrimary,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      'ID: ${center.centreId} • Capacity: ${center.capacity} slots/day',
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color: AppColors.textSecondary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Icon(
+                                isSelected ? Icons.check_circle : Icons.radio_button_unchecked,
+                                color: isSelected ? AppColors.primary : Colors.grey.shade400,
+                              ),
+                            ],
                           ),
                         ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  center.name,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                    color: isSelected ? AppColors.primary : AppColors.textPrimary,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  center.distance,
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    color: AppColors.textSecondary,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Icon(
-                              isSelected ? Icons.check_circle : Icons.radio_button_unchecked,
-                              color: isSelected ? AppColors.primary : Colors.grey.shade400,
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 ),
-              ),
 
               ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const BookSlotStep4DateScreen(),
-                    ),
-                  );
-                },
+                onPressed: _selectedCenter == null
+                    ? null
+                    : () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => BookSlotStep4DateScreen(
+                              crop: widget.crop,
+                              quantityQuintal: widget.quantityQuintal,
+                              state: widget.state,
+                              district: widget.district,
+                              centre: _selectedCenter!,
+                            ),
+                          ),
+                        );
+                      },
                 child: const Text('Next'),
               ),
             ],
@@ -162,4 +193,4 @@ class _BookSlotStep3CenterScreenState extends State<BookSlotStep3CenterScreen> {
       }),
     );
   }
-}
+}

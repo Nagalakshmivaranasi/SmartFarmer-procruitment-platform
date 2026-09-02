@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
-import 'booking_flow_screen.dart';
+import 'book_slot_step2_location_screen.dart';
 
 class BookSlotStep1CropScreen extends StatefulWidget {
   const BookSlotStep1CropScreen({super.key});
@@ -11,8 +11,24 @@ class BookSlotStep1CropScreen extends StatefulWidget {
 
 class _BookSlotStep1CropScreenState extends State<BookSlotStep1CropScreen> {
   String _selectedCrop = 'Wheat';
+  String _selectedSeason = 'Rabi';
   final TextEditingController _quantityController = TextEditingController(text: '20');
   final TextEditingController _landAreaController = TextEditingController(text: '5');
+
+  final List<String> _crops = [
+    'Wheat',
+    'Paddy',
+    'Mustard',
+    'Gram',
+    'Maize',
+    'Cotton',
+  ];
+
+  final List<String> _seasons = [
+    'Rabi',
+    'Kharif',
+    'Zaid',
+  ];
 
   @override
   void dispose() {
@@ -26,7 +42,7 @@ class _BookSlotStep1CropScreenState extends State<BookSlotStep1CropScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Book Slot'),
+        title: const Text('Book Slot (Step 1 of 6)'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
@@ -66,7 +82,7 @@ class _BookSlotStep1CropScreenState extends State<BookSlotStep1CropScreen> {
                           child: DropdownButton<String>(
                             value: _selectedCrop,
                             isExpanded: true,
-                            items: ['Wheat', 'Paddy', 'Mustard', 'Gram']
+                            items: _crops
                                 .map((crop) => DropdownMenuItem(
                                       value: crop,
                                       child: Text(crop),
@@ -74,6 +90,40 @@ class _BookSlotStep1CropScreenState extends State<BookSlotStep1CropScreen> {
                                 .toList(),
                             onChanged: (val) {
                               if (val != null) setState(() => _selectedCrop = val);
+                            },
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      const Text(
+                        'Crop Season',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: AppColors.border),
+                        ),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            value: _selectedSeason,
+                            isExpanded: true,
+                            items: _seasons
+                                .map((season) => DropdownMenuItem(
+                                      value: season,
+                                      child: Text(season),
+                                    ))
+                                .toList(),
+                            onChanged: (val) {
+                              if (val != null) setState(() => _selectedSeason = val);
                             },
                           ),
                         ),
@@ -91,7 +141,6 @@ class _BookSlotStep1CropScreenState extends State<BookSlotStep1CropScreen> {
                       const SizedBox(height: 8),
                       TextFormField(
                         controller: _quantityController,
-                        initialValue: null,
                         keyboardType: TextInputType.number,
                         decoration: const InputDecoration(
                           hintText: 'Enter quantity',
@@ -111,7 +160,6 @@ class _BookSlotStep1CropScreenState extends State<BookSlotStep1CropScreen> {
                       const SizedBox(height: 8),
                       TextFormField(
                         controller: _landAreaController,
-                        initialValue: null,
                         keyboardType: TextInputType.number,
                         decoration: const InputDecoration(
                           hintText: 'Enter land area',
@@ -125,12 +173,13 @@ class _BookSlotStep1CropScreenState extends State<BookSlotStep1CropScreen> {
 
               ElevatedButton(
                 onPressed: () {
+                  final qty = double.tryParse(_quantityController.text) ?? 20.0;
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => BookingFlowScreen(
+                      builder: (context) => BookSlotStep2LocationScreen(
                         crop: _selectedCrop,
-                        quantityQuintal: double.tryParse(_quantityController.text) ?? 0,
+                        quantityQuintal: qty,
                       ),
                     ),
                   );
@@ -170,4 +219,4 @@ class _BookSlotStep1CropScreenState extends State<BookSlotStep1CropScreen> {
       }),
     );
   }
-}
+}

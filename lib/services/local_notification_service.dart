@@ -6,6 +6,18 @@ import 'local_database_service.dart';
 class LocalNotificationService {
   final _database = IsarDatabaseService();
 
+  Future<void> notifyBookingSuccess(BookingModel booking) async {
+    final notification = NotificationModel(
+      userId: booking.farmerId,
+      title: 'Slot Booked Successfully',
+      body: 'Your slot for ${booking.crop} at ${booking.centreName} is confirmed for ${booking.bookingDate.day}/${booking.bookingDate.month}/${booking.bookingDate.year} ${booking.slotTime}. Token #${booking.token}.',
+      type: 'bookingConfirmed',
+      createdAt: DateTime.now(),
+      bookingId: booking.bookingId,
+    );
+    await _database.saveNotification(notification);
+  }
+
   Future<void> notifyDelay(BookingModel booking) async {
     final notification = NotificationModel(
       userId: booking.farmerId,

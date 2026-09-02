@@ -152,6 +152,19 @@ class IsarDatabaseService {
     return bookings.where((booking) => booking.status != 'Completed').length;
   }
 
+  Future<String> generateNextSequentialToken({
+    required String centreId,
+    required DateTime date,
+  }) async {
+    final start = DateTime(date.year, date.month, date.day);
+    final count = await isar.bookingModels
+        .filter()
+        .centreIdEqualTo(centreId)
+        .bookingDateBetween(start, start.add(const Duration(days: 1)))
+        .count();
+    return '${count + 1}';
+  }
+
   Future<bool> isSlotAvailable({
     required CentreModel centre,
     required DateTime date,

@@ -7,7 +7,11 @@ class SessionService {
   static final SessionService instance = SessionService._();
   UserModel? currentUser;
 
-  Future<void> restore() async {}
+  Future<void> restore() async {
+    if (currentUser == null) {
+      currentUser = await findUser('123456789012');
+    }
+  }
 
   void start(UserModel user) {
     currentUser = user;

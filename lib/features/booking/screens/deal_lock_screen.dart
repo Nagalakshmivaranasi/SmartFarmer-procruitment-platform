@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../models/booking_model.dart';
+import '../../../services/local_database_service.dart';
 import '../../payment/screens/payment_status_screen.dart';
 
 class DealLockScreen extends StatefulWidget {
@@ -150,10 +151,16 @@ class _DealLockScreenState extends State<DealLockScreen> {
                   Expanded(
                     child: ElevatedButton(
                       onPressed: _isAccepted
-                          ? () {
+                          ? () async {
+                              if (widget.booking != null) {
+                                widget.booking!.status = 'Completed';
+                                widget.booking!.paymentStatus = 'Paid';
+                                await IsarDatabaseService().saveBooking(widget.booking!);
+                              }
+                              if (!mounted) return;
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text('Deal Locked! Payment initiated.'),
+                                  content: Text('Deal Locked! Payment initiated and procurement completed.'),
                                   backgroundColor: AppColors.primary,
                                 ),
                               );

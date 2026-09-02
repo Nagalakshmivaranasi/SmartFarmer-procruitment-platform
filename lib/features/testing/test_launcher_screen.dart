@@ -3,7 +3,7 @@ import '../../core/theme/app_theme.dart';
 
 // Farmer Flow Screens
 import '../booking/screens/book_slot_step1_crop_screen.dart';
-import '../booking/screens/booking_confirmation_screen.dart';
+import '../booking/screens/booking_confirmed_screen.dart';
 import '../booking/screens/deal_lock_screen.dart';
 import '../booking/screens/quality_report_screen.dart';
 import '../farmer_home/screens/farmer_home_screen.dart';
@@ -63,7 +63,7 @@ class TestLauncherScreen extends StatelessWidget {
               context,
               title: '3. Booking Confirmation',
               subtitle: 'Token QR Code & appointment receipt',
-              target: const BookingConfirmationScreen(),
+              target: const BookingConfirmedScreen(),
             ),
             _buildTestTile(
               context,

@@ -96,6 +96,7 @@ class _QualityInspectionFormScreenState extends State<QualityInspectionFormScree
                         widget.booking!.status = 'Arrived';
                         await IsarDatabaseService().saveBooking(widget.booking!);
                       }
+                      if (!mounted) return;
                       setState(() => _farmerArrived = true);
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('Farmer marked as arrived.')), 
@@ -133,6 +134,7 @@ class _QualityInspectionFormScreenState extends State<QualityInspectionFormScree
                         widget.booking!.status = 'Deal Offered';
                         await IsarDatabaseService().saveBooking(widget.booking!);
                       }
+                      if (!mounted) return;
                       Navigator.push(
                         context,
                         MaterialPageRoute(

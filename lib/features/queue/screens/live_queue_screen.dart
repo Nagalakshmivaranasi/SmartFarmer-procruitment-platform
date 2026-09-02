@@ -1,9 +1,9 @@
-// lib/features/queue/screens/live_queue_screen.dart
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../services/local_database_service.dart';
 import '../../../services/session_service.dart';
 import '../../../models/booking_model.dart';
+import '../../booking/screens/book_slot_step1_crop_screen.dart';
 import '../../booking/screens/quality_report_screen.dart';
 
 class LiveQueueScreen extends StatelessWidget {
@@ -12,6 +12,7 @@ class LiveQueueScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final farmerId = SessionService.instance.currentUser?.farmerId ?? SessionService.instance.currentUser?.uid;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -25,21 +26,81 @@ class LiveQueueScreen extends StatelessWidget {
         child: farmerId == null
             ? const Center(child: Text('Sign in to view your queue.'))
             : FutureBuilder<List<BookingModel>>(
-                future: IsarDatabaseService().activeBookingsForFarmer(farmerId),
+                future: IsarDatabaseService().farmerBookings(farmerId),
                 builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
                   final bookings = snapshot.data ?? [];
-                  if (bookings.isEmpty) return const Center(child: Text('No active bookings.'));
-                  return _buildQueue(context, bookings.first);
+                  if (bookings.isEmpty) {
+                    return _buildEmptyState(context);
+                  }
+                  final activeBooking = bookings.firstWhere(
+                    (b) => b.status != 'Completed',
+                    orElse: () => bookings.first,
+                  );
+                  return _buildQueue(context, activeBooking);
                 },
               ),
       ),
     );
   }
 
+  Widget _buildEmptyState(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.event_busy, size: 64, color: AppColors.primary),
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              'No Active Booking Found',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'You do not have any active procurement slot bookings. Book a slot first to track live queue status and arrival timelines.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const BookSlotStep1CropScreen()),
+                );
+              },
+              icon: const Icon(Icons.calendar_month),
+              label: const Text('Book Procurement Slot Now'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildQueue(BuildContext context, BookingModel booking) {
-    return SafeArea(
-        child: SingleChildScrollView(
+    return FutureBuilder<int>(
+      future: IsarDatabaseService().queuePosition(booking),
+      builder: (context, posSnapshot) {
+        final pos = posSnapshot.data ?? 1;
+        final vehiclesAhead = pos > 1 ? pos - 1 : 0;
+
+        final isArrived = booking.status == 'Arrived' || booking.status == 'Under Inspection' || booking.status == 'Deal Offered' || booking.status == 'Completed';
+        final isInspected = booking.status == 'Under Inspection' || booking.status == 'Deal Offered' || booking.status == 'Completed';
+        final isCompleted = booking.status == 'Completed';
+
+        return SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
@@ -62,19 +123,19 @@ class LiveQueueScreen extends StatelessWidget {
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    SizedBox(height: 6),
+                    const SizedBox(height: 6),
                     Text(
                       '#${booking.token}',
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 48,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
                       booking.centreName,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 13,
                         color: Colors.white70,
                       ),
@@ -90,14 +151,14 @@ class LiveQueueScreen extends StatelessWidget {
                   Expanded(
                     child: _buildQueueStatTile(
                       label: 'Vehicles Ahead',
-                      value: 'Loading',
+                      value: '$vehiclesAhead',
                       icon: Icons.directions_bus_outlined,
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: _buildQueueStatTile(
-                      label: 'Est. Wait Time',
+                      label: 'Slot Time',
                       value: booking.slotTime,
                       icon: Icons.timer_outlined,
                     ),
@@ -126,16 +187,15 @@ class LiveQueueScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    _buildStepRow('Gate Verification', 'Completed at 10:45 AM', true, false),
-                    _buildStepRow('Moisture & Quality Sampling', 'In Progress', true, false),
-                    _buildStepRow('Weighbridge Entry', 'Pending', false, false),
-                    _buildStepRow('Unloading & Receipt', 'Pending', false, true),
+                    _buildStepRow('Gate Verification', isArrived ? 'Completed' : 'Pending', isArrived, false),
+                    _buildStepRow('Moisture & Quality Sampling', isInspected ? 'Completed' : (isArrived ? 'In Progress' : 'Pending'), isInspected, false),
+                    _buildStepRow('Weighbridge Entry & Deal Lock', booking.status == 'Deal Offered' ? 'Deal Offered' : (isCompleted ? 'Completed' : 'Pending'), booking.status == 'Deal Offered' || isCompleted, false),
+                    _buildStepRow('Unloading & Receipt', isCompleted ? 'Completed' : 'Pending', isCompleted, true),
                   ],
                 ),
               ),
               const SizedBox(height: 24),
 
-              // Action button to view quality report once sampled
               ElevatedButton(
                 onPressed: () {
                   Navigator.push(
@@ -149,8 +209,9 @@ class LiveQueueScreen extends StatelessWidget {
               ),
             ],
           ),
-        ),
-      );
+        );
+      },
+    );
   }
 
   Widget _buildQueueStatTile({
@@ -173,7 +234,7 @@ class LiveQueueScreen extends StatelessWidget {
           Text(
             value,
             style: const TextStyle(
-              fontSize: 18,
+              fontSize: 16,
               fontWeight: FontWeight.bold,
               color: AppColors.textPrimary,
             ),
@@ -236,4 +297,4 @@ class LiveQueueScreen extends StatelessWidget {
       ],
     );
   }
-}
+}

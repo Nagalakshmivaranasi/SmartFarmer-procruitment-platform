@@ -178,7 +178,7 @@ class _LoginScreenState extends State<LoginScreen> {
               role: widget.isFarmer ? UserRole.farmer : UserRole.officer,
             );
 
-            if (!context.mounted) return;
+            if (!mounted) return;
             setState(() => _isLoading = false);
 
             if (user != null) {
@@ -187,12 +187,13 @@ class _LoginScreenState extends State<LoginScreen> {
                   ? const FarmerHomeScreen()
                   : const OfficerDashboardScreen();
 
+              if (!mounted) return;
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (context) => nextPage),
               );
             } else {
-              // Show an error if the user isn't in the database
+              if (!mounted) return;
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('ID not found in local database.'),

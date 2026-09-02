@@ -1,33 +1,47 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../models/centre_model.dart';
 import 'book_slot_step5_time_screen.dart';
 
 class BookSlotStep4DateScreen extends StatefulWidget {
-  const BookSlotStep4DateScreen({super.key});
+  final String crop;
+  final double quantityQuintal;
+  final String state;
+  final String district;
+  final CentreModel centre;
+
+  const BookSlotStep4DateScreen({
+    super.key,
+    required this.crop,
+    required this.quantityQuintal,
+    required this.state,
+    required this.district,
+    required this.centre,
+  });
 
   @override
   State<BookSlotStep4DateScreen> createState() => _BookSlotStep4DateScreenState();
 }
 
 class _BookSlotStep4DateScreenState extends State<BookSlotStep4DateScreen> {
-  DateTime _selectedDate = DateTime(2025, 5, 25);
+  late DateTime _selectedDate;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedDate = DateTime.now();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Book Slot'),
+        title: const Text('Book Slot (Step 4 of 6)'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () {},
-          ),
-        ],
       ),
       body: SafeArea(
         child: Padding(
@@ -48,8 +62,8 @@ class _BookSlotStep4DateScreenState extends State<BookSlotStep4DateScreen> {
                 ),
                 child: CalendarDatePicker(
                   initialDate: _selectedDate,
-                  firstDate: DateTime(2025, 5, 1),
-                  lastDate: DateTime(2025, 6, 30),
+                  firstDate: DateTime.now(),
+                  lastDate: DateTime.now().add(const Duration(days: 90)),
                   onDateChanged: (newDate) {
                     setState(() => _selectedDate = newDate);
                   },
@@ -76,7 +90,7 @@ class _BookSlotStep4DateScreenState extends State<BookSlotStep4DateScreen> {
                       ),
                     ),
                     Text(
-                      '${_selectedDate.day} May ${_selectedDate.year}',
+                      '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
@@ -93,7 +107,14 @@ class _BookSlotStep4DateScreenState extends State<BookSlotStep4DateScreen> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const BookSlotStep5TimeScreen(),
+                      builder: (context) => BookSlotStep5TimeScreen(
+                        crop: widget.crop,
+                        quantityQuintal: widget.quantityQuintal,
+                        state: widget.state,
+                        district: widget.district,
+                        centre: widget.centre,
+                        date: _selectedDate,
+                      ),
                     ),
                   );
                 },
@@ -132,4 +153,4 @@ class _BookSlotStep4DateScreenState extends State<BookSlotStep4DateScreen> {
       }),
     );
   }
-}
+}

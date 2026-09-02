@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../services/session_service.dart';
 import '../../auth/screens/welcome_screen.dart';
+import '../../notifications/screens/notifications_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final bool isFarmer;
@@ -132,17 +133,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
             _buildMenuItem(
               icon: Icons.notifications_outlined,
               title: 'Notifications',
-              onTap: () {},
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationsScreen()));
+              },
             ),
             _buildMenuItem(
               icon: Icons.help_outline,
               title: 'Help & Support',
-              onTap: () {},
+              onTap: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('KisanSetu Support'),
+                    content: const Text('KisanSetu Toll-Free Helpline:\n1800-180-1551\nEmail: support@kisansetu.gov.in\nOperating Hours: 7:00 AM - 7:00 PM'),
+                    actions: [
+                      TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),
+                    ],
+                  ),
+                );
+              },
             ),
             _buildMenuItem(
               icon: Icons.info_outline,
               title: 'About Us',
-              onTap: () {},
+              onTap: () {
+                showAboutDialog(
+                  context: context,
+                  applicationName: 'KisanSetu',
+                  applicationVersion: '1.0.0',
+                  applicationLegalese: '© 2026 KisanSetu Procurement Platform. All rights reserved.',
+                );
+              },
             ),
             const Divider(height: 24),
             _buildMenuItem(
@@ -151,9 +172,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               titleColor: Colors.red.shade700,
               iconColor: Colors.red.shade700,
               onTap: () async {
+                final nav = Navigator.of(context);
                 await SessionService.instance.clear();
-                if (!context.mounted) return;
-                Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (_) => const WelcomeScreen()), (_) => false);
+                nav.pushAndRemoveUntil(MaterialPageRoute(builder: (_) => const WelcomeScreen()), (_) => false);
               },
             ),
             const SizedBox(height: 24),
