@@ -1,14 +1,12 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:smart_farmer_procurement/core/constants/firestore_paths.dart';
+import 'package:isar/isar.dart';
 import 'package:smart_farmer_procurement/models/booking_model.dart';
+import 'local_database_service.dart';
 
 class BookingService {
-  final FirebaseFirestore _firestore;
+  final IsarDatabaseService _database;
 
-  BookingService({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+  BookingService({IsarDatabaseService? database}) : _database = database ?? IsarDatabaseService();
 
-  // Create slot booking (Screens 7-12)
   Future<String> createBooking({
     required String farmerId,
     required String farmerName,
@@ -20,55 +18,41 @@ class BookingService {
     required String slotTime,
     required int tokenNumber,
   }) async {
-    final docRef = _firestore.collection(FirestorePaths.bookings).doc();
-
+    final token = tokenNumber.toString();
     final booking = BookingModel(
-      bookingId: docRef.id,
+      bookingId: 'booking_$token',
       farmerId: farmerId,
       farmerName: farmerName,
       centreId: centreId,
       centreName: centreName,
       crop: crop,
       quantityQuintal: quantityQuintal,
-      bookingDate: bookingDate,
+      bookingDate: DateTime.tryParse(bookingDate) ?? DateTime.now(),
       slotTime: slotTime,
-      tokenNumber: tokenNumber,
-      status: 'booked',
+      token: token,
+      status: 'Pending',
       createdAt: DateTime.now(),
     );
-
-    await docRef.set(booking.toMap());
-    return docRef.id;
+    await _database.saveBooking(booking);
+    return booking.bookingId;
   }
 
-  // Stream active bookings for a farmer (Screen 13)
-  Stream<List<BookingModel>> getFarmerBookings(String farmerId) {
-    return _firestore
-        .collection(FirestorePaths.bookings)
-        .where('farmerId', isEqualTo: farmerId)
-        .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => BookingModel.fromMap(doc.data(), doc.id))
-            .toList());
+  Stream<List<BookingModel>> getFarmerBookings(String farmerId) =>
+      IsarDatabaseService.isar.bookingModels.filter().farmerIdEqualTo(farmerId).findAll().asStream();
+
+  Future<void> rescheduleBooking({required String bookingId, required String newDate, required String newSlotTime}) async {
+    final booking = await IsarDatabaseService.isar.bookingModels.getByBookingId(bookingId);
+    if (booking == null) return;
+    booking.bookingDate = DateTime.tryParse(newDate) ?? booking.bookingDate;
+    booking.slotTime = newSlotTime;
+    booking.status = 'Rescheduled';
+    await _database.saveBooking(booking);
   }
 
-  // Reschedule slot (Screen 14)
-  Future<void> rescheduleBooking({
-    required String bookingId,
-    required String newDate,
-    required String newSlotTime,
-  }) async {
-    await _firestore.collection(FirestorePaths.bookings).doc(bookingId).update({
-      'bookingDate': newDate,
-      'slotTime': newSlotTime,
-      'status': 'rescheduled',
-    });
-  }
-
-  // Update booking status (Screens 15, Officer Flow 5-10)
   Future<void> updateBookingStatus(String bookingId, String newStatus) async {
-    await _firestore.collection(FirestorePaths.bookings).doc(bookingId).update({
-      'status': newStatus,
-    });
+    final booking = await IsarDatabaseService.isar.bookingModels.getByBookingId(bookingId);
+    if (booking == null) return;
+    booking.status = newStatus;
+    await _database.saveBooking(booking);
   }
 }

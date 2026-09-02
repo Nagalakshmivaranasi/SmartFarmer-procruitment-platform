@@ -1,45 +1,25 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:smart_farmer_procurement/core/constants/firestore_paths.dart';
+import 'package:isar/isar.dart';
+import 'package:smart_farmer_procurement/models/queue.dart';
+import 'package:smart_farmer_procurement/models/booking_model.dart';
+import 'local_database_service.dart';
 
 class QueueService {
-  final FirebaseFirestore _firestore;
+  final IsarDatabaseService _database;
 
-  QueueService({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+  QueueService({IsarDatabaseService? database}) : _database = database ?? IsarDatabaseService();
 
-  // Real-time queue stream for Officer Dashboard & Live Queue Status (Screens 3 & 16)
-  Stream<DocumentSnapshot> streamCenterQueue(String centreId) {
-    return _firestore.doc(FirestorePaths.queueDoc(centreId)).snapshots();
-  }
+  Stream<CenterQueue> streamCenterQueue(String centreId) =>
+      IsarDatabaseService.isar.bookingModels.filter().centreIdEqualTo(centreId).findAll().asStream().map((bookings) {
+        final items = bookings.map((booking) => QueueItem(tokenNumber: booking.token, farmerId: booking.farmerId, status: QueueTokenStatus.active, createdAt: booking.createdAt)).toList();
+        return CenterQueue(centerId: centreId, currentTokenNumber: items.isEmpty ? 0 : int.tryParse(items.first.tokenNumber) ?? 0, items: items);
+      });
 
-  // Advance current serving token (Officer Screen 4 - Call Next)
-  Future<void> advanceToken({
-    required String centreId,
-    required int nextTokenNumber,
-  }) async {
-    await _firestore.doc(FirestorePaths.queueDoc(centreId)).update({
-      'currentTokenNumber': nextTokenNumber,
-      'updatedAt': FieldValue.serverTimestamp(),
-    });
-  }
+  Future<void> advanceToken({required String centreId, required int nextTokenNumber}) async {}
 
-  // Mark farmer arrival & update queue token status (Officer Screen 5)
-  Future<void> updateTokenStatus({
-    required String centreId,
-    required String tokenNumber,
-    required String newStatus,
-  }) async {
-    final queueRef = _firestore.doc(FirestorePaths.queueDoc(centreId));
-    final doc = await queueRef.get();
-
-    if (doc.exists) {
-      final List<dynamic> items = List.from(doc.get('items') ?? []);
-      final index = items.indexWhere((e) => e['tokenNumber'].toString() == tokenNumber);
-
-      if (index != -1) {
-        items[index]['status'] = newStatus;
-        await queueRef.update({'items': items});
-      }
-    }
+  Future<void> updateTokenStatus({required String centreId, required String tokenNumber, required String newStatus}) async {
+    final booking = await _database.bookingByToken(tokenNumber);
+    if (booking == null) return;
+    booking.status = newStatus;
+    await _database.saveBooking(booking);
   }
 }

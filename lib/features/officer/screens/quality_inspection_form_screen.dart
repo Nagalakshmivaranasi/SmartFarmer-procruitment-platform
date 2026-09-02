@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../models/booking_model.dart';
+import '../../../services/local_database_service.dart';
 import '../../farmer_home/screens/farmer_inspection_approval_screen.dart';
 import '../models/inspection_result.dart';
 
 class QualityInspectionFormScreen extends StatefulWidget {
-  const QualityInspectionFormScreen({super.key});
+  final BookingModel? booking;
+
+  const QualityInspectionFormScreen({super.key, this.booking});
 
   @override
   State<QualityInspectionFormScreen> createState() => _QualityInspectionFormScreenState();
@@ -18,12 +22,12 @@ class _QualityInspectionFormScreenState extends State<QualityInspectionFormScree
   bool _farmerArrived = false;
 
   final double _basePrice = 2275.0; // MSP for Wheat in ₹/Quintal
-  final double _quantity = 50.0; // Quintals
+  double get _quantity => widget.booking?.quantityQuintal ?? 50.0;
 
   InspectionResult _calculateResult() {
     return InspectionResult(
-      tokenId: 'TK-88912',
-      cropName: 'Wheat (Sharbati)',
+      tokenId: widget.booking?.token ?? 'TK-88912',
+      cropName: widget.booking?.crop ?? 'Wheat (Sharbati)',
       totalQuantityQuintals: _quantity,
       moisturePercentage: double.tryParse(_moistureController.text) ?? 0.0,
       foreignMatterPercentage: double.tryParse(_foreignMatterController.text) ?? 0.0,
@@ -47,7 +51,7 @@ class _QualityInspectionFormScreenState extends State<QualityInspectionFormScree
             children: [
               Card(
                 child: ListTile(
-                  title: const Text('Token #TK-88912 • Ramesh Kumar'),
+                  title: Text('Token #${widget.booking?.token ?? 'Not available'} • ${widget.booking?.farmerName ?? 'Farmer'}'),
                   subtitle: Text('Crop: Wheat • Declared Qty: ${_quantity.toInt()} Quintals'),
                 ),
               ),
@@ -87,10 +91,12 @@ class _QualityInspectionFormScreenState extends State<QualityInspectionFormScree
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
-                    onPressed: () {
-                      setState(() {
-                        _farmerArrived = true;
-                      });
+                    onPressed: () async {
+                      if (widget.booking != null) {
+                        widget.booking!.status = 'Arrived';
+                        await IsarDatabaseService().saveBooking(widget.booking!);
+                      }
+                      setState(() => _farmerArrived = true);
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('Farmer marked as arrived.')), 
                       );
@@ -122,7 +128,11 @@ class _QualityInspectionFormScreenState extends State<QualityInspectionFormScree
                   width: double.infinity,
                   height: 48,
                   child: ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
+                      if (widget.booking != null) {
+                        widget.booking!.status = 'Deal Offered';
+                        await IsarDatabaseService().saveBooking(widget.booking!);
+                      }
                       Navigator.push(
                         context,
                         MaterialPageRoute(

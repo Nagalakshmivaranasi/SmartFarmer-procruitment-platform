@@ -15,6 +15,7 @@ import '../officer/screens/officer_dashboard_screen.dart';
 import '../officer/screens/quality_inspection_form_screen.dart';
 import '../officer/screens/slot_verification_screen.dart';
 import '../booking/screens/location_slot_selection_screen.dart';
+import '../../services/session_service.dart';
 class TestLauncherScreen extends StatelessWidget {
   const TestLauncherScreen({super.key});
 
@@ -53,9 +54,9 @@ class TestLauncherScreen extends StatelessWidget {
   context,
   title: 'State & District Slot Selector',
   subtitle: 'Cascading dropdowns with Green/Red/Grey slots',
-  target: const LocationSlotSelectionScreen(
-  uid: "test_farmer_123",
-  farmerName: "Test Farmer",
+  target: LocationSlotSelectionScreen(
+  uid: SessionService.instance.currentUser?.farmerId ?? '',
+  farmerName: SessionService.instance.currentUser?.name ?? '',
 )
 ),
             _buildTestTile(

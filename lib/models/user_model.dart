@@ -1,15 +1,24 @@
+import 'package:isar/isar.dart';
+
+part 'user_model.g.dart';
+
+@collection
 class UserModel {
-  final String uid;
-  final String role; // 'farmer' or 'officer'
-  final String name;
-  final String? farmerId;
-  final String? officerId;
-  final String phoneNumber;
-  final String? aadhaarNumber;
-  final String? state;
-  final String? district;
-  final String? centreId;
-  final DateTime createdAt;
+  Id id = Isar.autoIncrement;
+
+  @Index(unique: true, replace: true)
+  String uid;
+
+  String role;
+  String name;
+  String? farmerId;
+  String? officerId;
+  String phoneNumber;
+  String? aadhaarNumber;
+  String? state;
+  String? district;
+  String? centreId;
+  DateTime createdAt;
 
   UserModel({
     required this.uid,
@@ -25,20 +34,21 @@ class UserModel {
     required this.createdAt,
   });
 
-  factory UserModel.fromMap(Map<String, dynamic> data, String id) {
+  // Retained for seeding data locally or future cloud syncing
+  factory UserModel.fromMap(Map<String, dynamic> data, String mappedUid) {
     return UserModel(
-      uid: id,
+      uid: mappedUid,
       role: data['role'] ?? 'farmer',
       name: data['name'] ?? '',
       farmerId: data['farmerId'],
       officerId: data['officerId'],
       phoneNumber: data['phoneNumber'] ?? '',
-      aadhaarNumber: data['aadhaarNumber'],
-      state: data['state'],
-      district: data['district'],
+      aadhaarNumber: data['aadhaarNumber'] ?? '',
+      state: data['state'] ?? '',
+      district: data['district'] ?? '',
       centreId: data['centreId'],
       createdAt: data['createdAt'] != null
-          ? (data['createdAt'] as dynamic).toDate()
+          ? DateTime.tryParse(data['createdAt'].toString()) ?? DateTime.now()
           : DateTime.now(),
     );
   }

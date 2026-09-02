@@ -6,6 +6,9 @@ import '../../booking/screens/procurement_status_screen.dart';
 import '../../notifications/screens/notifications_screen.dart';
 import '../../payment/screens/payment_status_screen.dart';
 import '../../profile/screens/profile_screen.dart';
+import '../../../services/session_service.dart';
+import '../../../services/local_database_service.dart';
+import '../../../models/booking_model.dart';
 
 class FarmerHomeScreen extends StatefulWidget {
   const FarmerHomeScreen({super.key});
@@ -21,7 +24,7 @@ class _FarmerHomeScreenState extends State<FarmerHomeScreen> {
   Widget build(BuildContext context) {
     final List<Widget> pages = [
       _buildHomeContent(),
-      const FarmerBookingsScreen(uid: 'test_farmer_123'),
+      FarmerBookingsScreen(uid: SessionService.instance.currentUser?.farmerId ?? ''),
       const NotificationsScreen(),
       const ProfileScreen(isFarmer: true),
     ];
@@ -78,8 +81,8 @@ class _FarmerHomeScreenState extends State<FarmerHomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Namaste, Ramesh 👋',
+          Text(
+            'Namaste, ${SessionService.instance.currentUser?.name ?? 'Farmer'}',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -87,65 +90,15 @@ class _FarmerHomeScreenState extends State<FarmerHomeScreen> {
             ),
           ),
           const SizedBox(height: 2),
-          const Text(
-            'Farmer ID: KS10245',
+          Text(
+            'Farmer ID: ${SessionService.instance.currentUser?.farmerId ?? SessionService.instance.currentUser?.uid ?? 'Not available'}',
             style: TextStyle(
               fontSize: 13,
               color: AppColors.textSecondary,
             ),
           ),
           const SizedBox(height: 16),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppColors.cardBg,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.border),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.02),
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Next Procurement',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: 14),
-                Center(
-                  child: Column(
-                    children: const [
-                      Text(
-                        'No upcoming procurements',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        'Book your slot to get started',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
+          _buildNextProcurement(),
           const SizedBox(height: 20),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -172,71 +125,7 @@ class _FarmerHomeScreenState extends State<FarmerHomeScreen> {
             ],
           ),
           const SizedBox(height: 10),
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: AppColors.accentOrange,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.border),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: Colors.amber.shade100,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.grass,
-                    color: AppColors.primary,
-                    size: 28,
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Text(
-                        'Wheat',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                      SizedBox(height: 2),
-                      Text(
-                        '₹ 2,425 / Quintal',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                      SizedBox(height: 2),
-                      Text(
-                        'Shivpuri Procurement Center',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                      Text(
-                        '25 May 2025, 11:00 AM',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
+          _buildBestDeal(),
           const SizedBox(height: 24),
           const Text(
             'Quick Access',
@@ -273,7 +162,9 @@ class _FarmerHomeScreenState extends State<FarmerHomeScreen> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const FarmerBookingsScreen(uid: 'test_farmer_123'),
+                      builder: (context) => FarmerBookingsScreen(
+                        uid: SessionService.instance.currentUser?.farmerId ?? '',
+                      ),
                     ),
                   );
                 },
@@ -312,6 +203,39 @@ class _FarmerHomeScreenState extends State<FarmerHomeScreen> {
       ),
     );
   }
+
+  Widget _buildNextProcurement() {
+    final farmerId = SessionService.instance.currentUser?.farmerId ?? SessionService.instance.currentUser?.uid;
+    return FutureBuilder<List<BookingModel>>(
+      future: farmerId == null ? Future.value([]) : IsarDatabaseService().farmerBookings(farmerId),
+      builder: (context, snapshot) {
+        final bookings = (snapshot.data ?? []).where((booking) => booking.bookingDate.isAfter(DateTime.now())).toList();
+        final booking = bookings.isEmpty ? null : bookings.first;
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(color: AppColors.cardBg, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.border)),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            const Text('Next Procurement', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.textPrimary)),
+            const SizedBox(height: 14),
+            Center(child: Text(booking == null ? 'No upcoming procurements' : '${booking.crop} at ${booking.centreName}\n${booking.bookingDate.day}/${booking.bookingDate.month}/${booking.bookingDate.year} • ${booking.slotTime}', textAlign: TextAlign.center, style: const TextStyle(color: AppColors.textSecondary))),
+          ]),
+        );
+      },
+    );
+  }
+
+  Widget _buildBestDeal() => FutureBuilder<List<BookingModel>>(
+        future: IsarDatabaseService().allBookings(),
+        builder: (context, snapshot) {
+          final booking = (snapshot.data ?? []).isEmpty ? null : snapshot.data!.first;
+          return Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(color: AppColors.accentOrange, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.border)),
+            child: Text(booking == null ? 'No active offers' : '${booking.crop}\n${booking.centreName}\n${booking.slotTime}', style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+          );
+        },
+      );
 
   Widget _buildQuickAccessTile({
     required IconData icon,

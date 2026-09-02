@@ -1,8 +1,41 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../models/booking_model.dart';
+import '../../../services/local_database_service.dart';
 
-class PaymentStatusScreen extends StatelessWidget {
-  const PaymentStatusScreen({super.key});
+class PaymentStatusScreen extends StatefulWidget {
+  final BookingModel? booking;
+
+  const PaymentStatusScreen({super.key, this.booking});
+
+  @override
+  State<PaymentStatusScreen> createState() => _PaymentStatusScreenState();
+}
+
+class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
+  bool _isProcessing = true;
+  bool _isPaid = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _processPayment();
+  }
+
+  Future<void> _processPayment() async {
+    if (widget.booking == null) {
+      if (mounted) setState(() => _isProcessing = false);
+      return;
+    }
+    await Future<void>.delayed(const Duration(seconds: 2));
+    widget.booking!.paymentStatus = 'Paid';
+    await IsarDatabaseService().saveBooking(widget.booking!);
+    if (!mounted) return;
+    setState(() {
+      _isProcessing = false;
+      _isPaid = true;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,6 +74,22 @@ class PaymentStatusScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              if (widget.booking != null)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  margin: const EdgeInsets.only(bottom: 20),
+                  decoration: BoxDecoration(
+                    color: _isPaid ? Colors.green.shade50 : Colors.orange.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: _isPaid ? Colors.green : Colors.orange),
+                  ),
+                  child: Row(children: [
+                    Icon(_isProcessing ? Icons.hourglass_top : Icons.check_circle, color: _isPaid ? Colors.green : Colors.orange),
+                    const SizedBox(width: 10),
+                    Text(_isProcessing ? 'Processing payment...' : 'Payment successful', style: const TextStyle(fontWeight: FontWeight.bold)),
+                  ]),
+                ),
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(18),

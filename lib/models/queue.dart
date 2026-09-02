@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 enum QueueTokenStatus { active, serving, completed, cancelled, skipped }
 
 class QueueItem {
@@ -23,7 +21,7 @@ class QueueItem {
         (e) => e.name == map['status'],
         orElse: () => QueueTokenStatus.active,
       ),
-      createdAt: (map['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      createdAt: DateTime.tryParse(map['createdAt']?.toString() ?? '') ?? DateTime.now(),
     );
   }
 
@@ -32,7 +30,7 @@ class QueueItem {
       'tokenNumber': tokenNumber,
       'farmerId': farmerId,
       'status': status.name,
-      'createdAt': Timestamp.fromDate(createdAt),
+      'createdAt': createdAt.toIso8601String(),
     };
   }
 }
@@ -50,11 +48,10 @@ class CenterQueue {
     required this.items,
   });
 
-  factory CenterQueue.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>? ?? {};
+  factory CenterQueue.fromMap(Map<String, dynamic> data, String centerId) {
     final rawItems = (data['items'] as List<dynamic>?) ?? [];
     return CenterQueue(
-      centerId: doc.id,
+      centerId: centerId,
       currentTokenNumber: data['currentTokenNumber'] ?? 0,
       averageProcessingMinutes: data['averageProcessingMinutes'] ?? 5,
       items: rawItems

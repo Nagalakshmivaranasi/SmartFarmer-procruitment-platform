@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../models/booking_model.dart';
 import '../../payment/screens/payment_status_screen.dart';
 
 class DealLockScreen extends StatefulWidget {
-  const DealLockScreen({super.key});
+  final BookingModel? booking;
+
+  const DealLockScreen({super.key, this.booking});
 
   @override
   State<DealLockScreen> createState() => _DealLockScreenState();
@@ -157,7 +160,7 @@ class _DealLockScreenState extends State<DealLockScreen> {
                               Navigator.pushReplacement(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => const PaymentStatusScreen(),
+                                  builder: (context) => PaymentStatusScreen(booking: widget.booking),
                                 ),
                               );
                             }

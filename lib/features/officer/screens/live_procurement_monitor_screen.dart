@@ -21,7 +21,7 @@ class LiveProcurementMonitorScreen extends StatelessWidget {
           children: [
             _buildQueueCard(
               token: '#42',
-              farmerName: 'Ramesh Kumar',
+              farmerName: 'Farmer',
               crop: 'Wheat (20 Qtl)',
               status: 'Inspected',
               statusColor: AppColors.statusGreen,

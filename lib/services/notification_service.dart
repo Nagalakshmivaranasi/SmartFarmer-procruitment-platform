@@ -1,127 +1,44 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:smart_farmer_procurement/core/constants/app_constants.dart';
-import 'package:smart_farmer_procurement/core/constants/firestore_paths.dart';
 import 'package:smart_farmer_procurement/features/smart_arrival/services/eta_service.dart';
 import 'package:smart_farmer_procurement/models/notification.dart';
+import 'package:smart_farmer_procurement/models/notification_legacy.dart';
+import 'local_database_service.dart';
 
 class NotificationService {
-  final FirebaseFirestore _firestore;
-
-  // Throttling state to prevent repetitive notification spam
+  final IsarDatabaseService _database;
   DateTime? _lastNotifiedServiceTime;
   int? _lastNotifiedFarmersAhead;
   bool _departureNotified = false;
 
-  NotificationService({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+  NotificationService({IsarDatabaseService? database}) : _database = database ?? IsarDatabaseService();
 
-  Stream<List<AppNotification>> getUserNotifications(String userId) {
-    return _firestore
-        .collection(FirestorePaths.userNotifications(userId))
-        .orderBy('createdAt', descending: true)
-        .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => AppNotification.fromFirestore(doc))
-            .toList());
+  Stream<List<AppNotification>> getUserNotifications(String userId) =>
+      Stream.fromFuture(_database.userNotifications(userId)).map((items) => items.map((item) => AppNotification(
+        id: item.id.toString(), userId: item.userId, title: item.title, body: item.body,
+        type: NotificationType.values.firstWhere((type) => type.name == item.type, orElse: () => NotificationType.general),
+        createdAt: item.createdAt, isRead: item.isRead,
+      )).toList());
+
+  Future<void> sendNotification({required String userId, required String title, required String body, required NotificationType type, Map<String, dynamic>? metadata}) async {
+    await _database.saveNotification(NotificationModel(userId: userId, title: title, body: body, type: type.name, createdAt: DateTime.now()));
   }
 
-  Future<void> sendNotification({
-    required String userId,
-    required String title,
-    required String body,
-    required NotificationType type,
-    Map<String, dynamic>? metadata,
-  }) async {
-    final notification = AppNotification(
-      id: '',
-      userId: userId,
-      title: title,
-      body: body,
-      type: type,
-      createdAt: DateTime.now(),
-      metadata: metadata,
-    );
-
-    await _firestore
-        .collection(FirestorePaths.userNotifications(userId))
-        .add(notification.toFirestore());
-  }
-
-  /// Evaluates Smart Arrival ETA updates and fires deduplicated alerts
-  Future<void> evaluateAndNotifyArrivalUpdate({
-    required String userId,
-    required EtaCalculationResult result,
-    required bool isBookingActive,
-  }) async {
+  Future<void> evaluateAndNotifyArrivalUpdate({required String userId, required EtaCalculationResult result, required bool isBookingActive}) async {
     if (!isBookingActive) return;
-
     final now = DateTime.now();
-
-    // 1. Departure Time Trigger
-    if (!_departureNotified &&
-        (now.isAfter(result.recommendedDepartureTime) ||
-            now.isAtSameMomentAs(result.recommendedDepartureTime))) {
+    if (!_departureNotified && !now.isBefore(result.recommendedDepartureTime)) {
       _departureNotified = true;
-      await sendNotification(
-        userId: userId,
-        title: '🚜 It\'s time to leave',
-        body:
-            'Your procurement token is #${result.farmerToken}. Please start travelling to the procurement centre.',
-        type: NotificationType.departureTime,
-        metadata: {'token': result.farmerToken},
-      );
+      await sendNotification(userId: userId, title: 'It is time to leave', body: 'Your procurement token is #${result.farmerToken}.', type: NotificationType.departureTime);
     }
-
-    // 2. Queue Approaching Trigger
-    if (result.farmersAhead <= AppConstants.queueApproachingThresholdFarmers &&
-        (_lastNotifiedFarmersAhead == null ||
-            _lastNotifiedFarmersAhead! >
-                AppConstants.queueApproachingThresholdFarmers)) {
+    if (result.farmersAhead <= 2 && (_lastNotifiedFarmersAhead == null || _lastNotifiedFarmersAhead! > 2)) {
       _lastNotifiedFarmersAhead = result.farmersAhead;
-      await sendNotification(
-        userId: userId,
-        title: '🔔 Your token is approaching',
-        body:
-            'You are now only ${result.farmersAhead} farmer(s) away from procurement.',
-        type: NotificationType.queueApproaching,
-        metadata: {'farmersAhead': result.farmersAhead},
-      );
+      await sendNotification(userId: userId, title: 'Your token is approaching', body: 'You are ${result.farmersAhead} farmer(s) away.', type: NotificationType.queueApproaching);
     }
-
-    // 3. Significant ETA / Delay Shift Trigger
-    if (_lastNotifiedServiceTime != null) {
-      final differenceMinutes = result.expectedServiceTime
-          .difference(_lastNotifiedServiceTime!)
-          .inMinutes
-          .abs();
-
-      if (differenceMinutes >=
-          AppConstants.significantServiceTimeChangeMinutes) {
-        final isDelayed =
-            result.expectedServiceTime.isAfter(_lastNotifiedServiceTime!);
-        _lastNotifiedServiceTime = result.expectedServiceTime;
-
-        await sendNotification(
-          userId: userId,
-          title: isDelayed ? '⚠️ Procurement is delayed' : '🕐 ETA Updated',
-          body: isDelayed
-              ? 'Procurement is delayed. New expected service time: ${_formatTime(result.expectedServiceTime)}.'
-              : 'Your estimated service time is now ${_formatTime(result.expectedServiceTime)}.',
-          type: isDelayed
-              ? NotificationType.delayWarning
-              : NotificationType.etaUpdate,
-          metadata: {'serviceTime': result.expectedServiceTime.toIso8601String()},
-        );
-      }
-    } else {
-      _lastNotifiedServiceTime = result.expectedServiceTime;
+    if (_lastNotifiedServiceTime != null && result.expectedServiceTime.difference(_lastNotifiedServiceTime!).inMinutes.abs() >= 15) {
+      final delayed = result.expectedServiceTime.isAfter(_lastNotifiedServiceTime!);
+      await sendNotification(userId: userId, title: delayed ? 'Procurement is delayed' : 'ETA Updated', body: 'Expected service time: ${_formatTime(result.expectedServiceTime)}.', type: delayed ? NotificationType.delayWarning : NotificationType.etaUpdate);
     }
+    _lastNotifiedServiceTime = result.expectedServiceTime;
   }
 
-  String _formatTime(DateTime dt) {
-    final hour = dt.hour % 12 == 0 ? 12 : dt.hour % 12;
-    final minute = dt.minute.toString().padLeft(2, '0');
-    final period = dt.hour >= 12 ? 'PM' : 'AM';
-    return '$hour:$minute $period';
-  }
+  String _formatTime(DateTime value) => '${value.hour % 12 == 0 ? 12 : value.hour % 12}:${value.minute.toString().padLeft(2, '0')} ${value.hour >= 12 ? 'PM' : 'AM'}';
 }

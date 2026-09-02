@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../farmer_home/screens/farmer_home_screen.dart';
 import '../../officer/screens/officer_dashboard_screen.dart';
+import '../../../services/auth_service.dart';
+import '../../../services/session_service.dart';
+import 'register_screen.dart';
+
 class LoginScreen extends StatefulWidget {
   final bool isFarmer;
   const LoginScreen({super.key, required this.isFarmer});
@@ -12,8 +16,18 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   bool _isOtpSent = false;
+  bool _isLoading = false;
   final TextEditingController _idController = TextEditingController();
   final List<TextEditingController> _otpControllers = List.generate(6, (_) => TextEditingController());
+
+  @override
+  void dispose() {
+    _idController.dispose();
+    for (final controller in _otpControllers) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -69,6 +83,15 @@ class _LoginScreenState extends State<LoginScreen> {
             }
           },
           child: const Text('Send OTP'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => RegistrationScreen(isFarmer: widget.isFarmer),
+            ),
+          ),
+          child: const Text('Create an account'),
         ),
         const Spacer(),
         Row(
@@ -138,17 +161,53 @@ class _LoginScreenState extends State<LoginScreen> {
         const SizedBox(height: 24),
 
         ElevatedButton(
-          onPressed: () {
-            final nextPage = widget.isFarmer
-                ? const FarmerHomeScreen()
-                : const OfficerDashboardScreen();
+          // Changed to async to support database lookup
+          onPressed: _isLoading ? null : () async {
+            final enteredId = _idController.text.trim();
+            final otp = _otpControllers.map((controller) => controller.text).join();
+            if (enteredId.isEmpty || otp.length != 6) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Enter your ID and 6-digit OTP.')),
+              );
+              return;
+            }
+            setState(() => _isLoading = true);
 
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => nextPage),
+            final user = await AuthService().findUserForLogin(
+              identifier: enteredId,
+              role: widget.isFarmer ? UserRole.farmer : UserRole.officer,
             );
+
+            if (!context.mounted) return;
+            setState(() => _isLoading = false);
+
+            if (user != null) {
+              SessionService.instance.start(user);
+              final nextPage = user.role == 'farmer'
+                  ? const FarmerHomeScreen()
+                  : const OfficerDashboardScreen();
+
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => nextPage),
+              );
+            } else {
+              // Show an error if the user isn't in the database
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('ID not found in local database.'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
           },
-          child: const Text('Verify'),
+          child: _isLoading
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Text('Verify'),
         ),
       ],
     );

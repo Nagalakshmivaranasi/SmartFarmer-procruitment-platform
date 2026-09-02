@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
-import 'book_slot_step2_location_screen.dart';
+import 'booking_flow_screen.dart';
 
 class BookSlotStep1CropScreen extends StatefulWidget {
   const BookSlotStep1CropScreen({super.key});
@@ -10,7 +10,7 @@ class BookSlotStep1CropScreen extends StatefulWidget {
 }
 
 class _BookSlotStep1CropScreenState extends State<BookSlotStep1CropScreen> {
-  final String _selectedCrop = 'Wheat';
+  String _selectedCrop = 'Wheat';
   final TextEditingController _quantityController = TextEditingController(text: '20');
   final TextEditingController _landAreaController = TextEditingController(text: '5');
 
@@ -72,7 +72,9 @@ class _BookSlotStep1CropScreenState extends State<BookSlotStep1CropScreen> {
                                       child: Text(crop),
                                     ))
                                 .toList(),
-                            onChanged: (val) {},
+                            onChanged: (val) {
+                              if (val != null) setState(() => _selectedCrop = val);
+                            },
                           ),
                         ),
                       ),
@@ -126,7 +128,10 @@ class _BookSlotStep1CropScreenState extends State<BookSlotStep1CropScreen> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const BookSlotStep2LocationScreen(),
+                      builder: (context) => BookingFlowScreen(
+                        crop: _selectedCrop,
+                        quantityQuintal: double.tryParse(_quantityController.text) ?? 0,
+                      ),
                     ),
                   );
                 },

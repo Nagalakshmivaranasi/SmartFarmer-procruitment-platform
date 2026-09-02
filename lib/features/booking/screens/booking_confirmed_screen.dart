@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../models/booking_model.dart';
 import 'farmer_bookings_screen.dart';
 import '../../farmer_home/screens/farmer_home_screen.dart';
 
 class BookingConfirmedScreen extends StatelessWidget {
-  const BookingConfirmedScreen({super.key});
+  final BookingModel? booking;
+
+  const BookingConfirmedScreen({super.key, this.booking});
 
   @override
   Widget build(BuildContext context) {
@@ -55,15 +58,20 @@ class BookingConfirmedScreen extends StatelessWidget {
                 ),
                 child: Column(
                   children: [
-                    _buildSummaryRow('Token Number', '#42', isBold: true),
+                    _buildSummaryRow('Token Number', '#${booking?.token ?? 'N/A'}', isBold: true),
                     const Divider(height: 20),
-                    _buildSummaryRow('Crop', 'Wheat'),
+                    _buildSummaryRow('Crop', booking?.crop ?? 'N/A'),
                     const SizedBox(height: 10),
-                    _buildSummaryRow('Quantity', '20 Quintal (2000 Kg)'),
+                    _buildSummaryRow('Quantity', '${booking?.quantityQuintal ?? 0} Quintal'),
                     const SizedBox(height: 10),
-                    _buildSummaryRow('Center', 'Shivpuri Procurement Center'),
+                    _buildSummaryRow('Center', booking?.centreName ?? 'N/A'),
                     const SizedBox(height: 10),
-                    _buildSummaryRow('Date & Time', '25 May 2025, 11:00 AM'),
+                    _buildSummaryRow(
+                      'Date & Time',
+                      booking == null
+                          ? 'N/A'
+                          : '${booking!.bookingDate.day}/${booking!.bookingDate.month}/${booking!.bookingDate.year}, ${booking!.slotTime}',
+                    ),
                   ],
                 ),
               ),
@@ -75,7 +83,9 @@ class BookingConfirmedScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const FarmerBookingsScreen(uid: 'test_farmer_123'),
+                      builder: (context) => FarmerBookingsScreen(
+                        uid: booking?.farmerId ?? '',
+                      ),
                     ),
                   );
                 },

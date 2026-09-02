@@ -1,16 +1,28 @@
+import 'package:isar/isar.dart';
+
+part 'booking_model.g.dart';
+
+@collection
 class BookingModel {
-  final String bookingId;
-  final String farmerId;
-  final String farmerName;
-  final String centreId;
-  final String centreName;
-  final String crop;
-  final double quantityQuintal;
-  final String bookingDate;
-  final String slotTime;
-  final int tokenNumber;
-  final String status;
-  final DateTime createdAt;
+  Id id = Isar.autoIncrement;
+  @Index(unique: true, replace: true)
+  String bookingId;
+  @Index()
+  String farmerId;
+  String farmerName;
+  @Index()
+  String centreId;
+  String centreName;
+  String crop;
+  double quantityQuintal;
+  @Index()
+  DateTime bookingDate;
+  String slotTime;
+  @Index(unique: true, replace: true)
+  String token;
+  String status;
+  String paymentStatus;
+  DateTime createdAt;
 
   BookingModel({
     required this.bookingId,
@@ -22,10 +34,15 @@ class BookingModel {
     required this.quantityQuintal,
     required this.bookingDate,
     required this.slotTime,
-    required this.tokenNumber,
+    String token = '',
+    int? tokenNumber,
     required this.status,
+    this.paymentStatus = 'Pending',
     required this.createdAt,
-  });
+  }) : token = token.isEmpty ? tokenNumber?.toString() ?? '' : token;
+
+  @ignore
+  int get tokenNumber => int.tryParse(token) ?? 0;
 
   factory BookingModel.fromMap(Map<String, dynamic> data, String id) {
     return BookingModel(
@@ -36,12 +53,13 @@ class BookingModel {
       centreName: data['centreName'] ?? '',
       crop: data['crop'] ?? '',
       quantityQuintal: (data['quantityQuintal'] ?? 0).toDouble(),
-      bookingDate: data['bookingDate'] ?? '',
+        bookingDate: DateTime.tryParse(data['bookingDate']?.toString() ?? '') ?? DateTime.now(),
       slotTime: data['slotTime'] ?? '',
-      tokenNumber: data['tokenNumber'] ?? 0,
-      status: data['status'] ?? 'booked',
+        token: data['token']?.toString() ?? data['tokenNumber']?.toString() ?? '',
+        status: data['status'] ?? 'Pending',
+        paymentStatus: data['paymentStatus'] ?? 'Pending',
       createdAt: data['createdAt'] != null
-          ? (data['createdAt'] as dynamic).toDate()
+          ? DateTime.tryParse(data['createdAt'].toString()) ?? DateTime.now()
           : DateTime.now(),
     );
   }
@@ -55,11 +73,12 @@ class BookingModel {
       'centreName': centreName,
       'crop': crop,
       'quantityQuintal': quantityQuintal,
-      'bookingDate': bookingDate,
+      'bookingDate': bookingDate.toIso8601String(),
       'slotTime': slotTime,
-      'tokenNumber': tokenNumber,
+      'token': token,
       'status': status,
-      'createdAt': createdAt,
+      'paymentStatus': paymentStatus,
+      'createdAt': createdAt.toIso8601String(),
     };
   }
 }

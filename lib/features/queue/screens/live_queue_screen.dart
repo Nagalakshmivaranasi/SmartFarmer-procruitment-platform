@@ -1,6 +1,9 @@
 // lib/features/queue/screens/live_queue_screen.dart
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../services/local_database_service.dart';
+import '../../../services/session_service.dart';
+import '../../../models/booking_model.dart';
 import '../../booking/screens/quality_report_screen.dart';
 
 class LiveQueueScreen extends StatelessWidget {
@@ -8,6 +11,7 @@ class LiveQueueScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final farmerId = SessionService.instance.currentUser?.farmerId ?? SessionService.instance.currentUser?.uid;
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -18,6 +22,23 @@ class LiveQueueScreen extends StatelessWidget {
         ),
       ),
       body: SafeArea(
+        child: farmerId == null
+            ? const Center(child: Text('Sign in to view your queue.'))
+            : FutureBuilder<List<BookingModel>>(
+                future: IsarDatabaseService().activeBookingsForFarmer(farmerId),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
+                  final bookings = snapshot.data ?? [];
+                  if (bookings.isEmpty) return const Center(child: Text('No active bookings.'));
+                  return _buildQueue(context, bookings.first);
+                },
+              ),
+      ),
+    );
+  }
+
+  Widget _buildQueue(BuildContext context, BookingModel booking) {
+    return SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -31,8 +52,8 @@ class LiveQueueScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Column(
-                  children: const [
-                    Text(
+                  children: [
+                    const Text(
                       'YOUR TOKEN NUMBER',
                       style: TextStyle(
                         fontSize: 12,
@@ -43,7 +64,7 @@ class LiveQueueScreen extends StatelessWidget {
                     ),
                     SizedBox(height: 6),
                     Text(
-                      '#42',
+                      '#${booking.token}',
                       style: TextStyle(
                         fontSize: 48,
                         fontWeight: FontWeight.bold,
@@ -52,7 +73,7 @@ class LiveQueueScreen extends StatelessWidget {
                     ),
                     SizedBox(height: 4),
                     Text(
-                      'Shivpuri Main Center • Gate 2',
+                      booking.centreName,
                       style: TextStyle(
                         fontSize: 13,
                         color: Colors.white70,
@@ -69,7 +90,7 @@ class LiveQueueScreen extends StatelessWidget {
                   Expanded(
                     child: _buildQueueStatTile(
                       label: 'Vehicles Ahead',
-                      value: '3',
+                      value: 'Loading',
                       icon: Icons.directions_bus_outlined,
                     ),
                   ),
@@ -77,7 +98,7 @@ class LiveQueueScreen extends StatelessWidget {
                   Expanded(
                     child: _buildQueueStatTile(
                       label: 'Est. Wait Time',
-                      value: '~ 25 mins',
+                      value: booking.slotTime,
                       icon: Icons.timer_outlined,
                     ),
                   ),
@@ -129,8 +150,7 @@ class LiveQueueScreen extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
+      );
   }
 
   Widget _buildQueueStatTile({

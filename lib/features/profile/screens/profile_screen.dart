@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../services/session_service.dart';
+import '../../auth/screens/welcome_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final bool isFarmer;
@@ -15,16 +17,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final name = widget.isFarmer ? 'Ramesh Kumar' : 'Neha Sharma';
-    final id = widget.isFarmer ? 'Farmer ID: KS10245' : 'Officer ID: OFF-4092';
-    final phone = widget.isFarmer ? '+91 98765 43210' : '+91 99887 66554';
-    final address = widget.isFarmer
-        ? 'Village: Jaisinghpur, Shivpuri, Madhya Pradesh'
-        : 'Procurement Center: Shivpuri APMC, Gate 2';
-    final aadhaar = widget.isFarmer ? 'XXXX-XXXX-9876' : 'XXXX-XXXX-3344';
-    final bank = widget.isFarmer
-        ? 'SBI • A/C 214356789012 • IFSC: SBIN0012345'
-        : 'HDFC • A/C 552134578956 • IFSC: HDFC0004412';
+    final user = SessionService.instance.currentUser;
+    final name = user?.name ?? 'Profile';
+    final id = '${widget.isFarmer ? 'Farmer' : 'Officer'} ID: ${user?.farmerId ?? user?.officerId ?? user?.uid ?? 'Not available'}';
+    final phone = user?.phoneNumber ?? 'Not available';
+    final address = '${user?.district ?? 'District unavailable'}, ${user?.state ?? 'State unavailable'}';
+    final aadhaar = user?.aadhaarNumber ?? 'Not available';
+    const bank = 'Not available';
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -151,7 +150,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
               title: 'Logout',
               titleColor: Colors.red.shade700,
               iconColor: Colors.red.shade700,
-              onTap: () {},
+              onTap: () async {
+                await SessionService.instance.clear();
+                if (!context.mounted) return;
+                Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (_) => const WelcomeScreen()), (_) => false);
+              },
             ),
             const SizedBox(height: 24),
           ],

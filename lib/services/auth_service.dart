@@ -1,22 +1,30 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:isar/isar.dart';
 import 'package:smart_farmer_procurement/models/user_model.dart';
+import 'local_database_service.dart';
+import 'session_service.dart';
 
 enum UserRole { farmer, officer }
 
 class AuthService {
-  final FirebaseAuth _auth;
-  final FirebaseFirestore _firestore;
+  AuthService({IsarDatabaseService? database})
+      : _database = database ?? IsarDatabaseService();
 
-  AuthService({
-    FirebaseAuth? auth,
-    FirebaseFirestore? firestore,
-  })  : _auth = auth ?? FirebaseAuth.instance,
-        _firestore = firestore ?? FirebaseFirestore.instance;
+  final IsarDatabaseService _database;
+  UserModel? get currentUser => SessionService.instance.currentUser;
 
-  User? get currentUser => _auth.currentUser;
-
-  Stream<User?> get authStateChanges => _auth.authStateChanges();
+  Future<UserModel?> findUserForLogin({
+    required String identifier,
+    required UserRole role,
+  }) async {
+    final normalized = identifier.trim();
+    final user = await IsarDatabaseService.isar.userModels
+      .filter()
+      .uidEqualTo(normalized)
+      .or()
+      .officerIdEqualTo(normalized)
+      .findFirst();
+    return user?.role == role.name ? user : null;
+  }
 
   // Create or register user profile
   Future<void> registerUser({
@@ -27,8 +35,8 @@ class AuthService {
     String? farmerId,
     String? officerId,
     String? aadhaarNumber,
-    String? state,
-    String? district,
+    required String state,
+    required String district,
     String? centreId,
   }) async {
     final userModel = UserModel(
@@ -45,20 +53,16 @@ class AuthService {
       createdAt: DateTime.now(),
     );
 
-    await _firestore.collection('users').doc(uid).set(userModel.toMap());
+    await _database.saveUser(userModel);
   }
 
   // Fetch current user model
   Future<UserModel?> getUserModel(String uid) async {
-    final doc = await _firestore.collection('users').doc(uid).get();
-    if (doc.exists && doc.data() != null) {
-      return UserModel.fromMap(doc.data()!, doc.id);
-    }
-    return null;
+    return _database.findUserByUid(uid);
   }
 
   // Sign out
   Future<void> signOut() async {
-    await _auth.signOut();
+    await SessionService.instance.clear();
   }
 }
