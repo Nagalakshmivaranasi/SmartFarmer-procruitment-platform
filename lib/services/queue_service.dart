@@ -10,8 +10,17 @@ class QueueService {
 
   Stream<CenterQueue> streamCenterQueue(String centreId) =>
       IsarDatabaseService.isar.bookingModels.filter().centreIdEqualTo(centreId).findAll().asStream().map((bookings) {
-        final items = bookings.map((booking) => QueueItem(tokenNumber: booking.token, farmerId: booking.farmerId, status: QueueTokenStatus.active, createdAt: booking.createdAt)).toList();
-        return CenterQueue(centerId: centreId, currentTokenNumber: items.isEmpty ? 0 : int.tryParse(items.first.tokenNumber) ?? 0, items: items);
+        final items = bookings.map((booking) => QueueItem(
+          tokenNumber: booking.token,
+          farmerId: booking.farmerId,
+          status: QueueTokenStatus.active,
+          createdAt: booking.createdAt ?? DateTime.now(),
+        )).toList();
+        return CenterQueue(
+          centerId: centreId,
+          currentTokenNumber: items.isEmpty ? 0 : int.tryParse(items.first.tokenNumber) ?? 0,
+          items: items,
+        );
       });
 
   Future<void> advanceToken({required String centreId, required int nextTokenNumber}) async {}

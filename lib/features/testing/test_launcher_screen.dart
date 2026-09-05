@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
+import '../../models/booking_model.dart';
+import '../../services/session_service.dart';
 
 // Farmer Flow Screens
 import '../booking/screens/book_slot_step1_crop_screen.dart';
-import '../booking/screens/booking_confirmed_screen.dart';
+import '../farmer_home/screens/booking_confirmed_screen.dart';
 import '../booking/screens/deal_lock_screen.dart';
+import '../booking/screens/location_slot_selection_screen.dart';
 import '../booking/screens/quality_report_screen.dart';
-import '../farmer_home/screens/farmer_home_screen.dart';
+import '../farmer_home/screens/farmer_home_dashboard.dart';
 import '../queue/screens/live_queue_screen.dart';
 
 // Officer Flow Screens
@@ -14,13 +17,31 @@ import '../officer/screens/live_procurement_monitor_screen.dart';
 import '../officer/screens/officer_dashboard_screen.dart';
 import '../officer/screens/quality_inspection_form_screen.dart';
 import '../officer/screens/slot_verification_screen.dart';
-import '../booking/screens/location_slot_selection_screen.dart';
-import '../../services/session_service.dart';
+
 class TestLauncherScreen extends StatelessWidget {
   const TestLauncherScreen({super.key});
 
+  BookingModel _createSampleBooking() {
+    return BookingModel(
+      bookingId: 'test_sample_101',
+      farmerId: SessionService.instance.currentUser?.farmerId ?? 'KS10245',
+      farmerName: SessionService.instance.currentUser?.name ?? 'Ramesh Kumar',
+      centreId: 'CTR-01',
+      centreName: 'Shivpuri Procurement Center',
+      crop: 'Wheat',
+      quantityQuintal: 20.0,
+      bookingDate: DateTime.now(),
+      slotTime: '11:00 AM - 11:30 AM',
+      token: '#42',
+      status: 'Inspected',
+      createdAt: DateTime.now(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final sampleBooking = _createSampleBooking();
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -31,7 +52,6 @@ class TestLauncherScreen extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.all(16.0),
           children: [
-            // Farmer Persona Section
             _buildSectionHeader(
               title: 'Persona 1: Farmer Experience',
               subtitle: 'End-to-end procurement & slot booking journey',
@@ -42,7 +62,7 @@ class TestLauncherScreen extends StatelessWidget {
               context,
               title: '1. Farmer Home Screen',
               subtitle: 'Main landing page with active slots & quick actions',
-              target: const FarmerHomeScreen(),
+              target: const FarmerHomeDashboard(),
             ),
             _buildTestTile(
               context,
@@ -51,14 +71,14 @@ class TestLauncherScreen extends StatelessWidget {
               target: const BookSlotStep1CropScreen(),
             ),
             _buildTestTile(
-  context,
-  title: 'State & District Slot Selector',
-  subtitle: 'Cascading dropdowns with Green/Red/Grey slots',
-  target: LocationSlotSelectionScreen(
-  uid: SessionService.instance.currentUser?.farmerId ?? '',
-  farmerName: SessionService.instance.currentUser?.name ?? '',
-)
-),
+              context,
+              title: 'State & District Slot Selector',
+              subtitle: 'Cascading dropdowns with Green/Red/Grey slots',
+              target: LocationSlotSelectionScreen(
+                uid: SessionService.instance.currentUser?.farmerId ?? '',
+                farmerName: SessionService.instance.currentUser?.name ?? '',
+              ),
+            ),
             _buildTestTile(
               context,
               title: '3. Booking Confirmation',
@@ -81,12 +101,9 @@ class TestLauncherScreen extends StatelessWidget {
               context,
               title: '6. Deal Lock & Payout',
               subtitle: 'Final pricing breakdown & payment confirmation',
-              target: const DealLockScreen(),
+              target: DealLockScreen(booking: sampleBooking),
             ),
-
             const SizedBox(height: 24),
-
-            // Procurement Officer Persona Section
             _buildSectionHeader(
               title: 'Persona 2: Center Officer',
               subtitle: 'Center queue management & quality inspection',

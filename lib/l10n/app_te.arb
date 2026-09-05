@@ -1,0 +1,168 @@
+{
+  "@@locale": "te",
+  "appTitle": "స్మార్ట్ రైతు సేకరణ వేదిక",
+  "bookSlot": "స్లాట్ బుక్ చేయండి",
+  "payments": "చెల్లింపులు",
+  "myBookings": "నా బుకింగ్‌లు",
+  "slotStatus": "స్లాట్ స్థితి",
+  "reschedule": "రీషెడ్యూల్",
+  "alerts": "హెచ్చరికలు",
+  "totalReceived": "మొత్తం అందింది",
+  "inProcessPending": "ప్రక్రియలో ఉంది / బాకీ",
+  "transactionRecords": "లావాదేవీల రికార్డులు",
+  "token": "టోకెన్",
+  "crop": "పంట",
+  "quintal": "క్వింటాల్",
+  "paid": "చెల్లించబడింది",
+  "pending": "బాకీ ఉంది",
+  "processing": "పరిశీలనలో ఉంది",
+  "returnToHome": "హోమ్‌కు తిరిగి వెళ్ళు",
+  "initiateDbtPayment": "DBT చెల్లింపు ప్రారంభించండి",
+  "authorizingDbtTransfer": "DBT బదిలీ ఆమోదించబడుతోంది...",
+  "beneficiaryBankDetails": "లబ్ధిదారుని బ్యాంక్ వివరాలు",
+  "farmerName": "రైతు పేరు",
+  "bank": "బ్యాంకు",
+  "ifscCode": "IFSC కోడ్",
+  "accountNumber": "ఖాతా సంఖ్య",
+  "reviewProcurementOffer": "సేకరణ ఆఫర్‌ను సమీక్షించండి",
+  "acceptOffer": "ఆఫర్‌ను అంగీకరించండి",
+  "declineOffer": "తిరస్కరించు (పంట వాపసు)",
+  "totalNetPayable": "మొత్తం చెల్లించవలసిన నికర మొత్తం",
+  "selectActiveBookingReschedule": "రీషెడ్యూల్ చేయడానికి క్రియాశీల బుకింగ్‌ను ఎంచుకోండి.",
+  "activeTab": "ప్రస్తుత బుకింగ్‌లు",
+  "historyTab": "పూర్తయిన చరిత్ర",
+  "noActiveBookings": "ప్రస్తుత బుకింగ్‌లు ఏవీ లేవు.",
+  "noBookingHistory": "బుకింగ్ చరిత్ర ఏదీ కనిపించలేదు.",
+  "centre": "కేంద్రం",
+  "slotTime": "స్లాట్ సమయం",
+  "bookingDate": "బుకింగ్ తేదీ",
+  "trackStatus": "స్థితిని ట్రాక్ చేయండి",
+  "noTransactions": "లావాదేవీల రికార్డులు ఏవీ లేవు.",
+  "transactionId": "లావాదేవీ ID",
+  "paymentStatus": "చెల్లింపు స్థితి",
+  "dbtTransferred": "DBT బదిలీ చేయబడింది",
+  "utrNumber": "UTR సంఖ్య",
+  "notifications": "నోటిఫికేషన్‌లు",
+  "noNotifications": "ప్రస్తుతం నోటిఫికేషన్‌లు ఏవీ లేవు.",
+  "allCaughtUp": "మీరు అన్ని అప్‌డేట్‌లను చూశారు!",
+  "clearAll": "అన్నీ తొలగించు",
+  "bookSlotTitle": "సేకరణ స్లాట్‌ను బుక్ చేయండి",
+  "stepCropDetails": "పంట వివరాలు",
+  "stepCenterDate": "కేంద్రం & తేదీ",
+  "stepReview": "సమీక్ష & నిర్ధారణ",
+  "selectCrop": "పంటను ఎంచుకోండి",
+  "cropRequired": "దయచేసి పంటను ఎంచుకోండి",
+  "quantityQuintalLabel": "అంచనా పరిమాణం (క్వింటాళ్లలో)",
+  "quantityRequired": "దయచేసి పరిమాణాన్ని నమోదు చేయండి",
+  "quantityPositive": "పరిమాణం 0 కంటే ఎక్కువగా ఉండాలి",
+  "season": "సీజన్",
+  "state": "రాష్ట్రం",
+  "district": "జిల్లా",
+  "procurementCenter": "సేకరణ కేంద్రం",
+  "selectCenter": "సేకరణ కేంద్రాన్ని ఎంచుకోండి",
+  "centerRequired": "దయచేసి కేంద్రాన్ని ఎంచుకోండి",
+  "selectDate": "తేదీని ఎంచుకోండి",
+  "selectTimeSlot": "సమయ స్లాట్‌ను ఎంచుకోండి",
+  "timeSlotRequired": "దయచేసి సమయ స్లాట్‌ను ఎంచుకోండి",
+  "morningSlot": "ఉదయం (09:00 AM - 01:00 PM)",
+  "afternoonSlot": "మధ్యాహ్నం (02:00 PM - 05:00 PM)",
+  "reviewBookingDetails": "బుకింగ్ వివరాలను సమీక్షించండి",
+  "confirmAndGenerateToken": "నిర్ధారించి టోకెన్ పొందండి",
+  "bookingSuccess": "స్లాట్ విజయవంతంగా బుక్ చేయబడింది!",
+  "yourTokenNumber": "మీ టోకెన్ సంఖ్య",
+  "next": "తరువాత",
+  "back": "వెనుకకు",
+  "cancel": "రద్దు చేయి",
+  "close": "మూసివేయి",
+  "stepProgress": "దశ {current} / {total}: {title}",
+  "@stepProgress": {
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" },
+      "title": { "type": "String" }
+    }
+  },
+  "stepSelectCrop": "పంటను ఎంచుకోండి",
+  "stepProduceQuantity": "ఉత్పత్తి పరిమాణం",
+  "stepLocation": "ప్రాంతం",
+  "stepCenter": "కేంద్రం",
+  "stepDateAndSlot": "తేదీ & స్లాట్",
+  "continueButton": "కొనసాగించండి",
+  "confirmAndBookSlot": "నిర్ధారించి స్లాట్ బుక్ చేయండి",
+  "duplicateBookingError": "ఈ తేదీ మరియు సమయ స్లాట్‌లో మీకు ఇప్పటికే ఒక యాక్టివ్ బుకింగ్ ఉంది.",
+  "slotFullError": "ఈ సమయ స్లాట్ నిండిపోయింది. దయచేసి మరొక స్లాట్‌ను ఎంచుకోండి.",
+  "failedToBookSlot": "స్లాట్ బుకింగ్ విఫలమైంది: {error}",
+  "@failedToBookSlot": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "cropQuestion": "విక్రయించడానికి మీరు ఏ పంటను తీసుకువస్తున్నారు?",
+  "estimatedQuantityForCrop": "{crop} కొరకు అంచనా వేసిన పరిమాణం",
+  "@estimatedQuantityForCrop": {
+    "placeholders": {
+      "crop": { "type": "String" }
+    }
+  },
+  "quantitySubtext": "మీ భూమి నమోదు రికార్డు ప్రకారం క్వింటాళ్లలో పరిమాణాన్ని నమోదు చేయండి.",
+  "selectRegion": "ప్రాంతాన్ని ఎంచుకోండి",
+  "chooseDateAndArrivalSlot": "తేదీ & రాక సమయ స్లాట్‌ను ఎంచుకోండి",
+  "availableTimeWindows": "అందుబాటులో ఉన్న సమయ స్లాట్‌లు",
+  "dateLabel": "తేదీ: {date}",
+  "@dateLabel": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "signInToViewNotifications": "నోటిఫికేషన్‌లను చూడటానికి లాగిన్ అవ్వండి.",
+  "unableToLoadNotifications": "నోటిఫికేషన్‌లను లోడ్ చేయడం సాధ్యం కాలేదు: {error}",
+  "@unableToLoadNotifications": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "noNotificationsYet": "ఇంకా నోటిఫికేషన్‌లు ఏవీ లేవు.",
+  "gateVerificationPass": "గేట్ ధృవీకరణ పాస్",
+  "showTokenAtGate": "సేకరణ కేంద్రం గేట్ వద్ద ఈ టోకెన్‌ను చూపించండి",
+  "tapCardToViewQr": "QR పాస్ చూడటానికి కార్డ్‌ను తాకండి",
+  "cropAndQty": "పంట & పరిమాణం",
+  "dateAndSlot": "తేదీ & సమయం",
+  "procurementCentre": "సేకరణ కేంద్రం",
+  "completed": "పూర్తయింది",
+  "rejected": "తిరస్కరించబడింది",
+  "noSlotsBookedTillDate": "ఇప్పటివరకు ఎటువంటి స్లాట్‌లు బుక్ చేయబడలేదు",
+  "dateTimeFormat": "{day}/{month}/{year} ({slot})",
+  "@dateTimeFormat": {
+    "placeholders": {
+      "day": { "type": "int" },
+      "month": { "type": "int" },
+      "year": { "type": "int" },
+      "slot": { "type": "String" }
+    }
+  },
+  "shortDateFormat": "{day}/{month} • {slot}",
+  "@shortDateFormat": {
+    "placeholders": {
+      "day": { "type": "int" },
+      "month": { "type": "int" },
+      "slot": { "type": "String" }
+    }
+  },
+  "fullDateFormat": "{crop} • {day}/{month}/{year}",
+  "@fullDateFormat": {
+    "placeholders": {
+      "crop": { "type": "String" },
+      "day": { "type": "int" },
+      "month": { "type": "int" },
+      "year": { "type": "int" }
+    }
+  },
+  "dbtPaymentDispatched": "DBT చెల్లింపు పంపబడింది!",
+  "pfmsRoutingMessage": "చెల్లింపు ఆర్డర్ PFMS ద్వారా ప్రాసెస్ చేయబడింది.",
+  "amountTransferred": "బదిలీ చేయబడిన మొత్తం",
+  "beneficiary": "లబ్ధిదారుడు",
+  "paymentMode": "చెల్లింపు విధానం",
+  "directBenefitTransfer": "డైరెక్ట్ బెనిఫిట్ ట్రాన్స్‌ఫర్ (DBT)",
+  "transactionUtr": "లావాదేవీ UTR",
+  "timestamp": "సమయం"
+}

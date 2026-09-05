@@ -1,243 +1,154 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../services/session_service.dart';
-import '../../auth/screens/welcome_screen.dart';
-import '../../notifications/screens/notifications_screen.dart';
+import '../../auth/screens/splash_welcome_screen.dart';
+import '../../booking/screens/farmer_bookings_screen.dart';
 
-class ProfileScreen extends StatefulWidget {
-  final bool isFarmer;
-
-  const ProfileScreen({super.key, this.isFarmer = true});
-
-  @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
-}
-
-class _ProfileScreenState extends State<ProfileScreen> {
-  String _selectedLanguage = 'English';
+class ProfileScreen extends StatelessWidget {
+  const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     final user = SessionService.instance.currentUser;
-    final name = user?.name ?? 'Profile';
-    final id = '${widget.isFarmer ? 'Farmer' : 'Officer'} ID: ${user?.farmerId ?? user?.officerId ?? user?.uid ?? 'Not available'}';
-    final phone = user?.phoneNumber ?? 'Not available';
-    final address = '${user?.district ?? 'District unavailable'}, ${user?.state ?? 'State unavailable'}';
-    final aadhaar = user?.aadhaarNumber ?? 'Not available';
-    const bank = 'Not available';
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text(widget.isFarmer ? 'My Profile' : 'Officer Profile'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
+        title: const Text('Farmer Profile'),
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              width: double.infinity,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: AppColors.primary,
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.border),
               ),
-              child: Row(
+              child: Column(
                 children: [
-                  const CircleAvatar(
-                    radius: 30,
-                    backgroundColor: Colors.white,
-                    child: Icon(Icons.person, size: 34, color: AppColors.primary),
+                  CircleAvatar(
+                    radius: 36,
+                    backgroundColor: AppColors.mintGreen,
+                    child: Text(
+                      user?.name.isNotEmpty == true ? user!.name[0].toUpperCase() : 'F',
+                      style: const TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primary,
+                      ),
+                    ),
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          name,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          id,
-                          style: const TextStyle(color: Colors.white70, fontSize: 13),
-                        ),
-                      ],
+                  const SizedBox(height: 12),
+                  Text(
+                    user?.name ?? 'Farmer Name',
+                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 4),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.mintGreen,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      'Farmer ID: ${user?.farmerId ?? user?.uid ?? "N/A"}',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.primary,
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 20),
-            const Text(
-              'Personal Details',
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: Column(
+                children: [
+                  _infoTile(Icons.phone_outlined, 'Phone Number', user?.phoneNumber ?? 'N/A'),
+                  const Divider(),
+                  _infoTile(Icons.map_outlined, 'State', user?.state ?? 'N/A'),
+                  const Divider(),
+                  _infoTile(Icons.location_city_outlined, 'District', user?.district ?? 'N/A'),
+                  const Divider(),
+                  _infoTile(Icons.badge_outlined, 'Role', (user?.role ?? 'farmer').toUpperCase()),
+                ],
               ),
             ),
-            const SizedBox(height: 12),
-            _buildDetailCard('Full Name', name),
-            _buildDetailCard('Phone Number', phone),
-            _buildDetailCard('Address Details', address),
-            _buildDetailCard('Aadhaar Number', aadhaar),
-            _buildDetailCard('Bank Account Details', bank),
             const SizedBox(height: 20),
-            const Divider(),
-            const SizedBox(height: 12),
             ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.language_outlined, color: AppColors.textPrimary),
-              title: const Text(
-                'Language',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.textPrimary,
-                ),
+              tileColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: const BorderSide(color: AppColors.border),
               ),
-              trailing: DropdownButton<String>(
-                value: _selectedLanguage,
-                underline: const SizedBox(),
-                items: <String>['English', 'Hindi (हिंदी)', 'Telugu (తెలుగు)']
-                    .map<DropdownMenuItem<String>>((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(
-                      value,
-                      style: const TextStyle(fontSize: 14, color: AppColors.primary),
-                    ),
-                  );
-                }).toList(),
-                onChanged: (String? newValue) {
-                  if (newValue != null) {
-                    setState(() {
-                      _selectedLanguage = newValue;
-                    });
-                  }
-                },
-              ),
-            ),
-            const SizedBox(height: 8),
-            _buildMenuItem(
-              icon: Icons.notifications_outlined,
-              title: 'Notifications',
+              leading: const Icon(Icons.history, color: AppColors.primary),
+              title: const Text('My Bookings & Procurement History', style: TextStyle(fontWeight: FontWeight.w600)),
+              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
               onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationsScreen()));
-              },
-            ),
-            _buildMenuItem(
-              icon: Icons.help_outline,
-              title: 'Help & Support',
-              onTap: () {
-                showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Text('KisanSetu Support'),
-                    content: const Text('KisanSetu Toll-Free Helpline:\n1800-180-1551\nEmail: support@kisansetu.gov.in\nOperating Hours: 7:00 AM - 7:00 PM'),
-                    actions: [
-                      TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),
-                    ],
+                final farmerUid = user?.farmerId ?? user?.uid ?? '';
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => FarmerBookingsScreen(uid: farmerUid),
                   ),
                 );
               },
             ),
-            _buildMenuItem(
-              icon: Icons.info_outline,
-              title: 'About Us',
-              onTap: () {
-                showAboutDialog(
-                  context: context,
-                  applicationName: 'KisanSetu',
-                  applicationVersion: '1.0.0',
-                  applicationLegalese: '© 2026 KisanSetu Procurement Platform. All rights reserved.',
+            const SizedBox(height: 30),
+            ElevatedButton.icon(
+              onPressed: () async {
+                await SessionService.instance.clear();
+                if (!context.mounted) return;
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (_) => const SplashWelcomeScreen()),
+                  (route) => false,
                 );
               },
+              icon: const Icon(Icons.logout),
+              label: const Text('Logout'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red.shade700,
+                foregroundColor: Colors.white,
+              ),
             ),
-            const Divider(height: 24),
-            _buildMenuItem(
-              icon: Icons.logout,
-              title: 'Logout',
-              titleColor: Colors.red.shade700,
-              iconColor: Colors.red.shade700,
-              onTap: () async {
-                final nav = Navigator.of(context);
-                await SessionService.instance.clear();
-                nav.pushAndRemoveUntil(MaterialPageRoute(builder: (_) => const WelcomeScreen()), (_) => false);
-              },
-            ),
-            const SizedBox(height: 24),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildDetailCard(String label, String value) {
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _infoTile(IconData icon, String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
         children: [
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textSecondary,
+          Icon(icon, color: AppColors.textSecondary, size: 22),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Text(
+              label,
+              style: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
             ),
           ),
-          const SizedBox(height: 6),
           Text(
             value,
-            style: const TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary,
-            ),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildMenuItem({
-    required IconData icon,
-    required String title,
-    required VoidCallback onTap,
-    Color titleColor = AppColors.textPrimary,
-    Color iconColor = AppColors.textPrimary,
-  }) {
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      leading: Icon(icon, color: iconColor),
-      title: Text(
-        title,
-        style: TextStyle(
-          fontSize: 15,
-          fontWeight: FontWeight.w500,
-          color: titleColor,
-        ),
-      ),
-      onTap: onTap,
     );
   }
 }

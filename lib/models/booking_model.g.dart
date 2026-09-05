@@ -17,68 +17,108 @@ const BookingModelSchema = CollectionSchema(
   name: r'BookingModel',
   id: 643181679485769242,
   properties: {
-    r'bookingDate': PropertySchema(
+    r'baseMspRate': PropertySchema(
       id: 0,
+      name: r'baseMspRate',
+      type: IsarType.double,
+    ),
+    r'bookingDate': PropertySchema(
+      id: 1,
       name: r'bookingDate',
       type: IsarType.dateTime,
     ),
     r'bookingId': PropertySchema(
-      id: 1,
+      id: 2,
       name: r'bookingId',
       type: IsarType.string,
     ),
     r'centreId': PropertySchema(
-      id: 2,
+      id: 3,
       name: r'centreId',
       type: IsarType.string,
     ),
     r'centreName': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'centreName',
       type: IsarType.string,
     ),
     r'createdAt': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'createdAt',
       type: IsarType.dateTime,
     ),
     r'crop': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'crop',
       type: IsarType.string,
     ),
+    r'damagedGrainsLevel': PropertySchema(
+      id: 7,
+      name: r'damagedGrainsLevel',
+      type: IsarType.double,
+    ),
+    r'deductionPercentage': PropertySchema(
+      id: 8,
+      name: r'deductionPercentage',
+      type: IsarType.double,
+    ),
     r'farmerId': PropertySchema(
-      id: 6,
+      id: 9,
       name: r'farmerId',
       type: IsarType.string,
     ),
     r'farmerName': PropertySchema(
-      id: 7,
+      id: 10,
       name: r'farmerName',
       type: IsarType.string,
     ),
+    r'finalRatePerQuintal': PropertySchema(
+      id: 11,
+      name: r'finalRatePerQuintal',
+      type: IsarType.double,
+    ),
+    r'foreignMatterLevel': PropertySchema(
+      id: 12,
+      name: r'foreignMatterLevel',
+      type: IsarType.double,
+    ),
+    r'moistureLevel': PropertySchema(
+      id: 13,
+      name: r'moistureLevel',
+      type: IsarType.double,
+    ),
+    r'netPayableAmount': PropertySchema(
+      id: 14,
+      name: r'netPayableAmount',
+      type: IsarType.double,
+    ),
     r'paymentStatus': PropertySchema(
-      id: 8,
+      id: 15,
       name: r'paymentStatus',
       type: IsarType.string,
     ),
     r'quantityQuintal': PropertySchema(
-      id: 9,
+      id: 16,
       name: r'quantityQuintal',
       type: IsarType.double,
     ),
+    r'rejectionReason': PropertySchema(
+      id: 17,
+      name: r'rejectionReason',
+      type: IsarType.string,
+    ),
     r'slotTime': PropertySchema(
-      id: 10,
+      id: 18,
       name: r'slotTime',
       type: IsarType.string,
     ),
     r'status': PropertySchema(
-      id: 11,
+      id: 19,
       name: r'status',
       type: IsarType.string,
     ),
     r'token': PropertySchema(
-      id: 12,
+      id: 20,
       name: r'token',
       type: IsarType.string,
     )
@@ -97,58 +137,6 @@ const BookingModelSchema = CollectionSchema(
       properties: [
         IndexPropertySchema(
           name: r'bookingId',
-          type: IndexType.hash,
-          caseSensitive: true,
-        )
-      ],
-    ),
-    r'farmerId': IndexSchema(
-      id: -2038338479119917631,
-      name: r'farmerId',
-      unique: false,
-      replace: false,
-      properties: [
-        IndexPropertySchema(
-          name: r'farmerId',
-          type: IndexType.hash,
-          caseSensitive: true,
-        )
-      ],
-    ),
-    r'centreId': IndexSchema(
-      id: -3244273602824268092,
-      name: r'centreId',
-      unique: false,
-      replace: false,
-      properties: [
-        IndexPropertySchema(
-          name: r'centreId',
-          type: IndexType.hash,
-          caseSensitive: true,
-        )
-      ],
-    ),
-    r'bookingDate': IndexSchema(
-      id: -5790137373829985556,
-      name: r'bookingDate',
-      unique: false,
-      replace: false,
-      properties: [
-        IndexPropertySchema(
-          name: r'bookingDate',
-          type: IndexType.value,
-          caseSensitive: false,
-        )
-      ],
-    ),
-    r'token': IndexSchema(
-      id: -5898650166254967271,
-      name: r'token',
-      unique: true,
-      replace: true,
-      properties: [
-        IndexPropertySchema(
-          name: r'token',
           type: IndexType.hash,
           caseSensitive: true,
         )
@@ -176,6 +164,12 @@ int _bookingModelEstimateSize(
   bytesCount += 3 + object.farmerId.length * 3;
   bytesCount += 3 + object.farmerName.length * 3;
   bytesCount += 3 + object.paymentStatus.length * 3;
+  {
+    final value = object.rejectionReason;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
   bytesCount += 3 + object.slotTime.length * 3;
   bytesCount += 3 + object.status.length * 3;
   bytesCount += 3 + object.token.length * 3;
@@ -188,19 +182,27 @@ void _bookingModelSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeDateTime(offsets[0], object.bookingDate);
-  writer.writeString(offsets[1], object.bookingId);
-  writer.writeString(offsets[2], object.centreId);
-  writer.writeString(offsets[3], object.centreName);
-  writer.writeDateTime(offsets[4], object.createdAt);
-  writer.writeString(offsets[5], object.crop);
-  writer.writeString(offsets[6], object.farmerId);
-  writer.writeString(offsets[7], object.farmerName);
-  writer.writeString(offsets[8], object.paymentStatus);
-  writer.writeDouble(offsets[9], object.quantityQuintal);
-  writer.writeString(offsets[10], object.slotTime);
-  writer.writeString(offsets[11], object.status);
-  writer.writeString(offsets[12], object.token);
+  writer.writeDouble(offsets[0], object.baseMspRate);
+  writer.writeDateTime(offsets[1], object.bookingDate);
+  writer.writeString(offsets[2], object.bookingId);
+  writer.writeString(offsets[3], object.centreId);
+  writer.writeString(offsets[4], object.centreName);
+  writer.writeDateTime(offsets[5], object.createdAt);
+  writer.writeString(offsets[6], object.crop);
+  writer.writeDouble(offsets[7], object.damagedGrainsLevel);
+  writer.writeDouble(offsets[8], object.deductionPercentage);
+  writer.writeString(offsets[9], object.farmerId);
+  writer.writeString(offsets[10], object.farmerName);
+  writer.writeDouble(offsets[11], object.finalRatePerQuintal);
+  writer.writeDouble(offsets[12], object.foreignMatterLevel);
+  writer.writeDouble(offsets[13], object.moistureLevel);
+  writer.writeDouble(offsets[14], object.netPayableAmount);
+  writer.writeString(offsets[15], object.paymentStatus);
+  writer.writeDouble(offsets[16], object.quantityQuintal);
+  writer.writeString(offsets[17], object.rejectionReason);
+  writer.writeString(offsets[18], object.slotTime);
+  writer.writeString(offsets[19], object.status);
+  writer.writeString(offsets[20], object.token);
 }
 
 BookingModel _bookingModelDeserialize(
@@ -210,19 +212,27 @@ BookingModel _bookingModelDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = BookingModel(
-    bookingDate: reader.readDateTime(offsets[0]),
-    bookingId: reader.readString(offsets[1]),
-    centreId: reader.readString(offsets[2]),
-    centreName: reader.readString(offsets[3]),
-    createdAt: reader.readDateTime(offsets[4]),
-    crop: reader.readString(offsets[5]),
-    farmerId: reader.readString(offsets[6]),
-    farmerName: reader.readString(offsets[7]),
-    paymentStatus: reader.readStringOrNull(offsets[8]) ?? 'Pending',
-    quantityQuintal: reader.readDouble(offsets[9]),
-    slotTime: reader.readString(offsets[10]),
-    status: reader.readString(offsets[11]),
-    token: reader.readStringOrNull(offsets[12]) ?? '',
+    baseMspRate: reader.readDoubleOrNull(offsets[0]),
+    bookingDate: reader.readDateTime(offsets[1]),
+    bookingId: reader.readString(offsets[2]),
+    centreId: reader.readString(offsets[3]),
+    centreName: reader.readString(offsets[4]),
+    createdAt: reader.readDateTimeOrNull(offsets[5]),
+    crop: reader.readString(offsets[6]),
+    damagedGrainsLevel: reader.readDoubleOrNull(offsets[7]),
+    deductionPercentage: reader.readDoubleOrNull(offsets[8]),
+    farmerId: reader.readString(offsets[9]),
+    farmerName: reader.readString(offsets[10]),
+    finalRatePerQuintal: reader.readDoubleOrNull(offsets[11]),
+    foreignMatterLevel: reader.readDoubleOrNull(offsets[12]),
+    moistureLevel: reader.readDoubleOrNull(offsets[13]),
+    netPayableAmount: reader.readDoubleOrNull(offsets[14]),
+    paymentStatus: reader.readStringOrNull(offsets[15]) ?? 'Pending',
+    quantityQuintal: reader.readDouble(offsets[16]),
+    rejectionReason: reader.readStringOrNull(offsets[17]),
+    slotTime: reader.readString(offsets[18]),
+    status: reader.readStringOrNull(offsets[19]) ?? 'Slot Booked',
+    token: reader.readString(offsets[20]),
   );
   object.id = id;
   return object;
@@ -236,31 +246,47 @@ P _bookingModelDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readDateTime(offset)) as P;
+      return (reader.readDoubleOrNull(offset)) as P;
     case 1:
-      return (reader.readString(offset)) as P;
+      return (reader.readDateTime(offset)) as P;
     case 2:
       return (reader.readString(offset)) as P;
     case 3:
       return (reader.readString(offset)) as P;
     case 4:
-      return (reader.readDateTime(offset)) as P;
-    case 5:
       return (reader.readString(offset)) as P;
+    case 5:
+      return (reader.readDateTimeOrNull(offset)) as P;
     case 6:
       return (reader.readString(offset)) as P;
     case 7:
-      return (reader.readString(offset)) as P;
+      return (reader.readDoubleOrNull(offset)) as P;
     case 8:
-      return (reader.readStringOrNull(offset) ?? 'Pending') as P;
+      return (reader.readDoubleOrNull(offset)) as P;
     case 9:
-      return (reader.readDouble(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 10:
       return (reader.readString(offset)) as P;
     case 11:
-      return (reader.readString(offset)) as P;
+      return (reader.readDoubleOrNull(offset)) as P;
     case 12:
-      return (reader.readStringOrNull(offset) ?? '') as P;
+      return (reader.readDoubleOrNull(offset)) as P;
+    case 13:
+      return (reader.readDoubleOrNull(offset)) as P;
+    case 14:
+      return (reader.readDoubleOrNull(offset)) as P;
+    case 15:
+      return (reader.readStringOrNull(offset) ?? 'Pending') as P;
+    case 16:
+      return (reader.readDouble(offset)) as P;
+    case 17:
+      return (reader.readStringOrNull(offset)) as P;
+    case 18:
+      return (reader.readString(offset)) as P;
+    case 19:
+      return (reader.readStringOrNull(offset) ?? 'Slot Booked') as P;
+    case 20:
+      return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
@@ -332,59 +358,6 @@ extension BookingModelByIndex on IsarCollection<BookingModel> {
       {bool saveLinks = true}) {
     return putAllByIndexSync(r'bookingId', objects, saveLinks: saveLinks);
   }
-
-  Future<BookingModel?> getByToken(String token) {
-    return getByIndex(r'token', [token]);
-  }
-
-  BookingModel? getByTokenSync(String token) {
-    return getByIndexSync(r'token', [token]);
-  }
-
-  Future<bool> deleteByToken(String token) {
-    return deleteByIndex(r'token', [token]);
-  }
-
-  bool deleteByTokenSync(String token) {
-    return deleteByIndexSync(r'token', [token]);
-  }
-
-  Future<List<BookingModel?>> getAllByToken(List<String> tokenValues) {
-    final values = tokenValues.map((e) => [e]).toList();
-    return getAllByIndex(r'token', values);
-  }
-
-  List<BookingModel?> getAllByTokenSync(List<String> tokenValues) {
-    final values = tokenValues.map((e) => [e]).toList();
-    return getAllByIndexSync(r'token', values);
-  }
-
-  Future<int> deleteAllByToken(List<String> tokenValues) {
-    final values = tokenValues.map((e) => [e]).toList();
-    return deleteAllByIndex(r'token', values);
-  }
-
-  int deleteAllByTokenSync(List<String> tokenValues) {
-    final values = tokenValues.map((e) => [e]).toList();
-    return deleteAllByIndexSync(r'token', values);
-  }
-
-  Future<Id> putByToken(BookingModel object) {
-    return putByIndex(r'token', object);
-  }
-
-  Id putByTokenSync(BookingModel object, {bool saveLinks = true}) {
-    return putByIndexSync(r'token', object, saveLinks: saveLinks);
-  }
-
-  Future<List<Id>> putAllByToken(List<BookingModel> objects) {
-    return putAllByIndex(r'token', objects);
-  }
-
-  List<Id> putAllByTokenSync(List<BookingModel> objects,
-      {bool saveLinks = true}) {
-    return putAllByIndexSync(r'token', objects, saveLinks: saveLinks);
-  }
 }
 
 extension BookingModelQueryWhereSort
@@ -392,14 +365,6 @@ extension BookingModelQueryWhereSort
   QueryBuilder<BookingModel, BookingModel, QAfterWhere> anyId() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(const IdWhereClause.any());
-    });
-  }
-
-  QueryBuilder<BookingModel, BookingModel, QAfterWhere> anyBookingDate() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        const IndexWhereClause.any(indexName: r'bookingDate'),
-      );
     });
   }
 }
@@ -517,238 +482,94 @@ extension BookingModelQueryWhere
       }
     });
   }
-
-  QueryBuilder<BookingModel, BookingModel, QAfterWhereClause> farmerIdEqualTo(
-      String farmerId) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'farmerId',
-        value: [farmerId],
-      ));
-    });
-  }
-
-  QueryBuilder<BookingModel, BookingModel, QAfterWhereClause>
-      farmerIdNotEqualTo(String farmerId) {
-    return QueryBuilder.apply(this, (query) {
-      if (query.whereSort == Sort.asc) {
-        return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'farmerId',
-              lower: [],
-              upper: [farmerId],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'farmerId',
-              lower: [farmerId],
-              includeLower: false,
-              upper: [],
-            ));
-      } else {
-        return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'farmerId',
-              lower: [farmerId],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'farmerId',
-              lower: [],
-              upper: [farmerId],
-              includeUpper: false,
-            ));
-      }
-    });
-  }
-
-  QueryBuilder<BookingModel, BookingModel, QAfterWhereClause> centreIdEqualTo(
-      String centreId) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'centreId',
-        value: [centreId],
-      ));
-    });
-  }
-
-  QueryBuilder<BookingModel, BookingModel, QAfterWhereClause>
-      centreIdNotEqualTo(String centreId) {
-    return QueryBuilder.apply(this, (query) {
-      if (query.whereSort == Sort.asc) {
-        return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'centreId',
-              lower: [],
-              upper: [centreId],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'centreId',
-              lower: [centreId],
-              includeLower: false,
-              upper: [],
-            ));
-      } else {
-        return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'centreId',
-              lower: [centreId],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'centreId',
-              lower: [],
-              upper: [centreId],
-              includeUpper: false,
-            ));
-      }
-    });
-  }
-
-  QueryBuilder<BookingModel, BookingModel, QAfterWhereClause>
-      bookingDateEqualTo(DateTime bookingDate) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'bookingDate',
-        value: [bookingDate],
-      ));
-    });
-  }
-
-  QueryBuilder<BookingModel, BookingModel, QAfterWhereClause>
-      bookingDateNotEqualTo(DateTime bookingDate) {
-    return QueryBuilder.apply(this, (query) {
-      if (query.whereSort == Sort.asc) {
-        return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'bookingDate',
-              lower: [],
-              upper: [bookingDate],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'bookingDate',
-              lower: [bookingDate],
-              includeLower: false,
-              upper: [],
-            ));
-      } else {
-        return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'bookingDate',
-              lower: [bookingDate],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'bookingDate',
-              lower: [],
-              upper: [bookingDate],
-              includeUpper: false,
-            ));
-      }
-    });
-  }
-
-  QueryBuilder<BookingModel, BookingModel, QAfterWhereClause>
-      bookingDateGreaterThan(
-    DateTime bookingDate, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'bookingDate',
-        lower: [bookingDate],
-        includeLower: include,
-        upper: [],
-      ));
-    });
-  }
-
-  QueryBuilder<BookingModel, BookingModel, QAfterWhereClause>
-      bookingDateLessThan(
-    DateTime bookingDate, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'bookingDate',
-        lower: [],
-        upper: [bookingDate],
-        includeUpper: include,
-      ));
-    });
-  }
-
-  QueryBuilder<BookingModel, BookingModel, QAfterWhereClause>
-      bookingDateBetween(
-    DateTime lowerBookingDate,
-    DateTime upperBookingDate, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'bookingDate',
-        lower: [lowerBookingDate],
-        includeLower: includeLower,
-        upper: [upperBookingDate],
-        includeUpper: includeUpper,
-      ));
-    });
-  }
-
-  QueryBuilder<BookingModel, BookingModel, QAfterWhereClause> tokenEqualTo(
-      String token) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'token',
-        value: [token],
-      ));
-    });
-  }
-
-  QueryBuilder<BookingModel, BookingModel, QAfterWhereClause> tokenNotEqualTo(
-      String token) {
-    return QueryBuilder.apply(this, (query) {
-      if (query.whereSort == Sort.asc) {
-        return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'token',
-              lower: [],
-              upper: [token],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'token',
-              lower: [token],
-              includeLower: false,
-              upper: [],
-            ));
-      } else {
-        return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'token',
-              lower: [token],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'token',
-              lower: [],
-              upper: [token],
-              includeUpper: false,
-            ));
-      }
-    });
-  }
 }
 
 extension BookingModelQueryFilter
     on QueryBuilder<BookingModel, BookingModel, QFilterCondition> {
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      baseMspRateIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'baseMspRate',
+      ));
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      baseMspRateIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'baseMspRate',
+      ));
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      baseMspRateEqualTo(
+    double? value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'baseMspRate',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      baseMspRateGreaterThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'baseMspRate',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      baseMspRateLessThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'baseMspRate',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      baseMspRateBetween(
+    double? lower,
+    double? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'baseMspRate',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
   QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
       bookingDateEqualTo(DateTime value) {
     return QueryBuilder.apply(this, (query) {
@@ -1214,7 +1035,25 @@ extension BookingModelQueryFilter
   }
 
   QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
-      createdAtEqualTo(DateTime value) {
+      createdAtIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'createdAt',
+      ));
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      createdAtIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'createdAt',
+      ));
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      createdAtEqualTo(DateTime? value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'createdAt',
@@ -1225,7 +1064,7 @@ extension BookingModelQueryFilter
 
   QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
       createdAtGreaterThan(
-    DateTime value, {
+    DateTime? value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -1239,7 +1078,7 @@ extension BookingModelQueryFilter
 
   QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
       createdAtLessThan(
-    DateTime value, {
+    DateTime? value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -1253,8 +1092,8 @@ extension BookingModelQueryFilter
 
   QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
       createdAtBetween(
-    DateTime lower,
-    DateTime upper, {
+    DateTime? lower,
+    DateTime? upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
@@ -1399,6 +1238,174 @@ extension BookingModelQueryFilter
       return query.addFilterCondition(FilterCondition.greaterThan(
         property: r'crop',
         value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      damagedGrainsLevelIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'damagedGrainsLevel',
+      ));
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      damagedGrainsLevelIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'damagedGrainsLevel',
+      ));
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      damagedGrainsLevelEqualTo(
+    double? value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'damagedGrainsLevel',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      damagedGrainsLevelGreaterThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'damagedGrainsLevel',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      damagedGrainsLevelLessThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'damagedGrainsLevel',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      damagedGrainsLevelBetween(
+    double? lower,
+    double? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'damagedGrainsLevel',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      deductionPercentageIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'deductionPercentage',
+      ));
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      deductionPercentageIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'deductionPercentage',
+      ));
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      deductionPercentageEqualTo(
+    double? value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'deductionPercentage',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      deductionPercentageGreaterThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'deductionPercentage',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      deductionPercentageLessThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'deductionPercentage',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      deductionPercentageBetween(
+    double? lower,
+    double? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'deductionPercentage',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
       ));
     });
   }
@@ -1675,6 +1682,174 @@ extension BookingModelQueryFilter
     });
   }
 
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      finalRatePerQuintalIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'finalRatePerQuintal',
+      ));
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      finalRatePerQuintalIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'finalRatePerQuintal',
+      ));
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      finalRatePerQuintalEqualTo(
+    double? value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'finalRatePerQuintal',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      finalRatePerQuintalGreaterThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'finalRatePerQuintal',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      finalRatePerQuintalLessThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'finalRatePerQuintal',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      finalRatePerQuintalBetween(
+    double? lower,
+    double? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'finalRatePerQuintal',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      foreignMatterLevelIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'foreignMatterLevel',
+      ));
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      foreignMatterLevelIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'foreignMatterLevel',
+      ));
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      foreignMatterLevelEqualTo(
+    double? value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'foreignMatterLevel',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      foreignMatterLevelGreaterThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'foreignMatterLevel',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      foreignMatterLevelLessThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'foreignMatterLevel',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      foreignMatterLevelBetween(
+    double? lower,
+    double? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'foreignMatterLevel',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
   QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition> idEqualTo(
       Id value) {
     return QueryBuilder.apply(this, (query) {
@@ -1724,6 +1899,174 @@ extension BookingModelQueryFilter
         includeLower: includeLower,
         upper: upper,
         includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      moistureLevelIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'moistureLevel',
+      ));
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      moistureLevelIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'moistureLevel',
+      ));
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      moistureLevelEqualTo(
+    double? value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'moistureLevel',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      moistureLevelGreaterThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'moistureLevel',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      moistureLevelLessThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'moistureLevel',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      moistureLevelBetween(
+    double? lower,
+    double? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'moistureLevel',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      netPayableAmountIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'netPayableAmount',
+      ));
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      netPayableAmountIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'netPayableAmount',
+      ));
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      netPayableAmountEqualTo(
+    double? value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'netPayableAmount',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      netPayableAmountGreaterThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'netPayableAmount',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      netPayableAmountLessThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'netPayableAmount',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      netPayableAmountBetween(
+    double? lower,
+    double? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'netPayableAmount',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
       ));
     });
   }
@@ -1926,6 +2269,160 @@ extension BookingModelQueryFilter
         upper: upper,
         includeUpper: includeUpper,
         epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      rejectionReasonIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'rejectionReason',
+      ));
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      rejectionReasonIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'rejectionReason',
+      ));
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      rejectionReasonEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'rejectionReason',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      rejectionReasonGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'rejectionReason',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      rejectionReasonLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'rejectionReason',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      rejectionReasonBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'rejectionReason',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      rejectionReasonStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'rejectionReason',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      rejectionReasonEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'rejectionReason',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      rejectionReasonContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'rejectionReason',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      rejectionReasonMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'rejectionReason',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      rejectionReasonIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'rejectionReason',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterFilterCondition>
+      rejectionReasonIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'rejectionReason',
+        value: '',
       ));
     });
   }
@@ -2344,6 +2841,19 @@ extension BookingModelQueryLinks
 
 extension BookingModelQuerySortBy
     on QueryBuilder<BookingModel, BookingModel, QSortBy> {
+  QueryBuilder<BookingModel, BookingModel, QAfterSortBy> sortByBaseMspRate() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'baseMspRate', Sort.asc);
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterSortBy>
+      sortByBaseMspRateDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'baseMspRate', Sort.desc);
+    });
+  }
+
   QueryBuilder<BookingModel, BookingModel, QAfterSortBy> sortByBookingDate() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'bookingDate', Sort.asc);
@@ -2418,6 +2928,34 @@ extension BookingModelQuerySortBy
     });
   }
 
+  QueryBuilder<BookingModel, BookingModel, QAfterSortBy>
+      sortByDamagedGrainsLevel() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'damagedGrainsLevel', Sort.asc);
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterSortBy>
+      sortByDamagedGrainsLevelDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'damagedGrainsLevel', Sort.desc);
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterSortBy>
+      sortByDeductionPercentage() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'deductionPercentage', Sort.asc);
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterSortBy>
+      sortByDeductionPercentageDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'deductionPercentage', Sort.desc);
+    });
+  }
+
   QueryBuilder<BookingModel, BookingModel, QAfterSortBy> sortByFarmerId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'farmerId', Sort.asc);
@@ -2440,6 +2978,61 @@ extension BookingModelQuerySortBy
       sortByFarmerNameDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'farmerName', Sort.desc);
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterSortBy>
+      sortByFinalRatePerQuintal() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'finalRatePerQuintal', Sort.asc);
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterSortBy>
+      sortByFinalRatePerQuintalDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'finalRatePerQuintal', Sort.desc);
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterSortBy>
+      sortByForeignMatterLevel() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'foreignMatterLevel', Sort.asc);
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterSortBy>
+      sortByForeignMatterLevelDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'foreignMatterLevel', Sort.desc);
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterSortBy> sortByMoistureLevel() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'moistureLevel', Sort.asc);
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterSortBy>
+      sortByMoistureLevelDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'moistureLevel', Sort.desc);
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterSortBy>
+      sortByNetPayableAmount() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'netPayableAmount', Sort.asc);
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterSortBy>
+      sortByNetPayableAmountDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'netPayableAmount', Sort.desc);
     });
   }
 
@@ -2467,6 +3060,20 @@ extension BookingModelQuerySortBy
       sortByQuantityQuintalDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'quantityQuintal', Sort.desc);
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterSortBy>
+      sortByRejectionReason() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'rejectionReason', Sort.asc);
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterSortBy>
+      sortByRejectionReasonDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'rejectionReason', Sort.desc);
     });
   }
 
@@ -2509,6 +3116,19 @@ extension BookingModelQuerySortBy
 
 extension BookingModelQuerySortThenBy
     on QueryBuilder<BookingModel, BookingModel, QSortThenBy> {
+  QueryBuilder<BookingModel, BookingModel, QAfterSortBy> thenByBaseMspRate() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'baseMspRate', Sort.asc);
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterSortBy>
+      thenByBaseMspRateDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'baseMspRate', Sort.desc);
+    });
+  }
+
   QueryBuilder<BookingModel, BookingModel, QAfterSortBy> thenByBookingDate() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'bookingDate', Sort.asc);
@@ -2583,6 +3203,34 @@ extension BookingModelQuerySortThenBy
     });
   }
 
+  QueryBuilder<BookingModel, BookingModel, QAfterSortBy>
+      thenByDamagedGrainsLevel() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'damagedGrainsLevel', Sort.asc);
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterSortBy>
+      thenByDamagedGrainsLevelDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'damagedGrainsLevel', Sort.desc);
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterSortBy>
+      thenByDeductionPercentage() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'deductionPercentage', Sort.asc);
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterSortBy>
+      thenByDeductionPercentageDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'deductionPercentage', Sort.desc);
+    });
+  }
+
   QueryBuilder<BookingModel, BookingModel, QAfterSortBy> thenByFarmerId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'farmerId', Sort.asc);
@@ -2608,6 +3256,34 @@ extension BookingModelQuerySortThenBy
     });
   }
 
+  QueryBuilder<BookingModel, BookingModel, QAfterSortBy>
+      thenByFinalRatePerQuintal() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'finalRatePerQuintal', Sort.asc);
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterSortBy>
+      thenByFinalRatePerQuintalDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'finalRatePerQuintal', Sort.desc);
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterSortBy>
+      thenByForeignMatterLevel() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'foreignMatterLevel', Sort.asc);
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterSortBy>
+      thenByForeignMatterLevelDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'foreignMatterLevel', Sort.desc);
+    });
+  }
+
   QueryBuilder<BookingModel, BookingModel, QAfterSortBy> thenById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
@@ -2617,6 +3293,33 @@ extension BookingModelQuerySortThenBy
   QueryBuilder<BookingModel, BookingModel, QAfterSortBy> thenByIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.desc);
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterSortBy> thenByMoistureLevel() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'moistureLevel', Sort.asc);
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterSortBy>
+      thenByMoistureLevelDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'moistureLevel', Sort.desc);
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterSortBy>
+      thenByNetPayableAmount() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'netPayableAmount', Sort.asc);
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterSortBy>
+      thenByNetPayableAmountDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'netPayableAmount', Sort.desc);
     });
   }
 
@@ -2644,6 +3347,20 @@ extension BookingModelQuerySortThenBy
       thenByQuantityQuintalDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'quantityQuintal', Sort.desc);
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterSortBy>
+      thenByRejectionReason() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'rejectionReason', Sort.asc);
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QAfterSortBy>
+      thenByRejectionReasonDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'rejectionReason', Sort.desc);
     });
   }
 
@@ -2686,6 +3403,12 @@ extension BookingModelQuerySortThenBy
 
 extension BookingModelQueryWhereDistinct
     on QueryBuilder<BookingModel, BookingModel, QDistinct> {
+  QueryBuilder<BookingModel, BookingModel, QDistinct> distinctByBaseMspRate() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'baseMspRate');
+    });
+  }
+
   QueryBuilder<BookingModel, BookingModel, QDistinct> distinctByBookingDate() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'bookingDate');
@@ -2726,6 +3449,20 @@ extension BookingModelQueryWhereDistinct
     });
   }
 
+  QueryBuilder<BookingModel, BookingModel, QDistinct>
+      distinctByDamagedGrainsLevel() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'damagedGrainsLevel');
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QDistinct>
+      distinctByDeductionPercentage() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'deductionPercentage');
+    });
+  }
+
   QueryBuilder<BookingModel, BookingModel, QDistinct> distinctByFarmerId(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -2737,6 +3474,34 @@ extension BookingModelQueryWhereDistinct
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'farmerName', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QDistinct>
+      distinctByFinalRatePerQuintal() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'finalRatePerQuintal');
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QDistinct>
+      distinctByForeignMatterLevel() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'foreignMatterLevel');
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QDistinct>
+      distinctByMoistureLevel() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'moistureLevel');
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QDistinct>
+      distinctByNetPayableAmount() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'netPayableAmount');
     });
   }
 
@@ -2752,6 +3517,14 @@ extension BookingModelQueryWhereDistinct
       distinctByQuantityQuintal() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'quantityQuintal');
+    });
+  }
+
+  QueryBuilder<BookingModel, BookingModel, QDistinct> distinctByRejectionReason(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'rejectionReason',
+          caseSensitive: caseSensitive);
     });
   }
 
@@ -2785,6 +3558,12 @@ extension BookingModelQueryProperty
     });
   }
 
+  QueryBuilder<BookingModel, double?, QQueryOperations> baseMspRateProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'baseMspRate');
+    });
+  }
+
   QueryBuilder<BookingModel, DateTime, QQueryOperations> bookingDateProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'bookingDate');
@@ -2809,7 +3588,7 @@ extension BookingModelQueryProperty
     });
   }
 
-  QueryBuilder<BookingModel, DateTime, QQueryOperations> createdAtProperty() {
+  QueryBuilder<BookingModel, DateTime?, QQueryOperations> createdAtProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'createdAt');
     });
@@ -2818,6 +3597,20 @@ extension BookingModelQueryProperty
   QueryBuilder<BookingModel, String, QQueryOperations> cropProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'crop');
+    });
+  }
+
+  QueryBuilder<BookingModel, double?, QQueryOperations>
+      damagedGrainsLevelProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'damagedGrainsLevel');
+    });
+  }
+
+  QueryBuilder<BookingModel, double?, QQueryOperations>
+      deductionPercentageProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'deductionPercentage');
     });
   }
 
@@ -2833,6 +3626,34 @@ extension BookingModelQueryProperty
     });
   }
 
+  QueryBuilder<BookingModel, double?, QQueryOperations>
+      finalRatePerQuintalProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'finalRatePerQuintal');
+    });
+  }
+
+  QueryBuilder<BookingModel, double?, QQueryOperations>
+      foreignMatterLevelProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'foreignMatterLevel');
+    });
+  }
+
+  QueryBuilder<BookingModel, double?, QQueryOperations>
+      moistureLevelProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'moistureLevel');
+    });
+  }
+
+  QueryBuilder<BookingModel, double?, QQueryOperations>
+      netPayableAmountProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'netPayableAmount');
+    });
+  }
+
   QueryBuilder<BookingModel, String, QQueryOperations> paymentStatusProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'paymentStatus');
@@ -2843,6 +3664,13 @@ extension BookingModelQueryProperty
       quantityQuintalProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'quantityQuintal');
+    });
+  }
+
+  QueryBuilder<BookingModel, String?, QQueryOperations>
+      rejectionReasonProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'rejectionReason');
     });
   }
 

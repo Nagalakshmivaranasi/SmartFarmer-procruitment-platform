@@ -1,0 +1,168 @@
+{
+  "@@locale": "en",
+  "appTitle": "Smart Farmer Procurement",
+  "bookSlot": "Book Slot",
+  "payments": "Payments",
+  "myBookings": "My Bookings",
+  "slotStatus": "Slot Status",
+  "reschedule": "Reschedule",
+  "alerts": "Alerts",
+  "totalReceived": "Total Received",
+  "inProcessPending": "In Process / Pending",
+  "transactionRecords": "Transaction Records",
+  "token": "Token",
+  "crop": "Crop",
+  "quintal": "Quintal",
+  "paid": "PAID",
+  "pending": "PENDING",
+  "processing": "PROCESSING",
+  "returnToHome": "Return to Home",
+  "initiateDbtPayment": "Initiate DBT Payment",
+  "authorizingDbtTransfer": "Authorizing DBT Transfer...",
+  "beneficiaryBankDetails": "Beneficiary Bank Details",
+  "farmerName": "Farmer Name",
+  "bank": "Bank",
+  "ifscCode": "IFSC Code",
+  "accountNumber": "Account Number",
+  "reviewProcurementOffer": "Review Procurement Offer",
+  "acceptOffer": "Accept Offer",
+  "declineOffer": "Decline (Return Produce)",
+  "totalNetPayable": "Total Net Payable",
+  "selectActiveBookingReschedule": "Select an active booking to reschedule.",
+  "activeTab": "Active",
+  "historyTab": "History / Completed",
+  "noActiveBookings": "No active bookings found.",
+  "noBookingHistory": "No booking history found.",
+  "centre": "Centre",
+  "slotTime": "Slot Time",
+  "bookingDate": "Booking Date",
+  "trackStatus": "Track Status",
+  "noTransactions": "No transaction records found.",
+  "transactionId": "Transaction ID",
+  "paymentStatus": "Payment Status",
+  "dbtTransferred": "DBT Transferred",
+  "utrNumber": "UTR Number",
+  "notifications": "Notifications",
+  "noNotifications": "No notifications right now.",
+  "allCaughtUp": "You are all caught up!",
+  "clearAll": "Clear All",
+  "bookSlotTitle": "Book Procurement Slot",
+  "stepCropDetails": "Crop Details",
+  "stepCenterDate": "Center & Date",
+  "stepReview": "Review & Confirm",
+  "selectCrop": "Select Crop",
+  "cropRequired": "Please select a crop",
+  "quantityQuintalLabel": "Estimated Quantity (Quintals)",
+  "quantityRequired": "Please enter quantity",
+  "quantityPositive": "Quantity must be greater than 0",
+  "season": "Season",
+  "state": "State",
+  "district": "District",
+  "procurementCenter": "Procurement Center",
+  "selectCenter": "Select Procurement Center",
+  "centerRequired": "Please select a center",
+  "selectDate": "Select Date",
+  "selectTimeSlot": "Select Time Slot",
+  "timeSlotRequired": "Please select a time slot",
+  "morningSlot": "Morning (09:00 AM - 01:00 PM)",
+  "afternoonSlot": "Afternoon (02:00 PM - 05:00 PM)",
+  "reviewBookingDetails": "Review Booking Details",
+  "confirmAndGenerateToken": "Confirm & Generate Token",
+  "bookingSuccess": "Slot Booked Successfully!",
+  "yourTokenNumber": "Your Token Number",
+  "next": "Next",
+  "back": "Back",
+  "cancel": "Cancel",
+  "close": "Close",
+  "stepProgress": "Step {current} of {total}: {title}",
+  "@stepProgress": {
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" },
+      "title": { "type": "String" }
+    }
+  },
+  "stepSelectCrop": "Select Crop",
+  "stepProduceQuantity": "Produce Quantity",
+  "stepLocation": "Location",
+  "stepCenter": "Center",
+  "stepDateAndSlot": "Date & Slot",
+  "continueButton": "Continue",
+  "confirmAndBookSlot": "Confirm & Book Slot",
+  "duplicateBookingError": "You already have an active booking for this date and time slot.",
+  "slotFullError": "This time slot is full. Please choose another slot.",
+  "failedToBookSlot": "Failed to book slot: {error}",
+  "@failedToBookSlot": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "cropQuestion": "Which crop are you bringing to sell?",
+  "estimatedQuantityForCrop": "Estimated Quantity for {crop}",
+  "@estimatedQuantityForCrop": {
+    "placeholders": {
+      "crop": { "type": "String" }
+    }
+  },
+  "quantitySubtext": "Enter the quantity in quintals as per your land registration record.",
+  "selectRegion": "Select Region",
+  "chooseDateAndArrivalSlot": "Choose Date & Arrival Slot",
+  "availableTimeWindows": "Available Time Windows",
+  "dateLabel": "Date: {date}",
+  "@dateLabel": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "signInToViewNotifications": "Sign in to view notifications.",
+  "unableToLoadNotifications": "Unable to load notifications: {error}",
+  "@unableToLoadNotifications": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "noNotificationsYet": "No notifications yet.",
+  "gateVerificationPass": "Gate Verification Pass",
+  "showTokenAtGate": "Show this token at the procurement center gate",
+  "tapCardToViewQr": "Tap card to view QR Pass",
+  "cropAndQty": "Crop & Qty",
+  "dateAndSlot": "Date & Slot",
+  "procurementCentre": "Procurement Centre",
+  "completed": "Completed",
+  "rejected": "Rejected",
+  "noSlotsBookedTillDate": "No slots booked till date",
+  "dateTimeFormat": "{day}/{month}/{year} ({slot})",
+  "@dateTimeFormat": {
+    "placeholders": {
+      "day": { "type": "int" },
+      "month": { "type": "int" },
+      "year": { "type": "int" },
+      "slot": { "type": "String" }
+    }
+  },
+  "shortDateFormat": "{day}/{month} • {slot}",
+  "@shortDateFormat": {
+    "placeholders": {
+      "day": { "type": "int" },
+      "month": { "type": "int" },
+      "slot": { "type": "String" }
+    }
+  },
+  "fullDateFormat": "{crop} • {day}/{month}/{year}",
+  "@fullDateFormat": {
+    "placeholders": {
+      "crop": { "type": "String" },
+      "day": { "type": "int" },
+      "month": { "type": "int" },
+      "year": { "type": "int" }
+    }
+  },
+  "dbtPaymentDispatched": "DBT Payment Dispatched!",
+  "pfmsRoutingMessage": "Payment order processed and routed through PFMS.",
+  "amountTransferred": "Amount Transferred",
+  "beneficiary": "Beneficiary",
+  "paymentMode": "Payment Mode",
+  "directBenefitTransfer": "Direct Benefit Transfer (DBT)",
+  "transactionUtr": "Transaction UTR",
+  "timestamp": "Timestamp"
+}

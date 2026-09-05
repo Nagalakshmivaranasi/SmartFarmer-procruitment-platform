@@ -7,7 +7,7 @@ import 'package:smart_farmer_procurement/main.dart';
 
 void main() {
   testWidgets('App smoke test', (WidgetTester tester) async {
-    await tester.pumpWidget(const AgriProcurementApp());
+    await tester.pumpWidget(const KisanSetuApp());
   });
 
   testWidgets('Profile screen shows full farmer details', (WidgetTester tester) async {
@@ -25,7 +25,8 @@ void main() {
   });
 
   testWidgets('Payment screen shows account balance and payment history', (WidgetTester tester) async {
-    await tester.pumpWidget(const MaterialApp(home: PaymentStatusScreen()));
+    await tester.pumpWidget(const MaterialApp(home: // Pass farmerId: 'test_farmer_123' (or appropriate dummy ID)
+PaymentStatusScreen(farmerId: 'test_farmer_123')));
 
     expect(find.text('Available Balance'), findsOneWidget);
     expect(find.text('Past Payment History'), findsOneWidget);

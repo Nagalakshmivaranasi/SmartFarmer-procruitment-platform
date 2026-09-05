@@ -1,7 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.SEND_SMS"/>
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
     <application
-        android:label="smart_farmer_procurement"
+        android:label="KisanSetu"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

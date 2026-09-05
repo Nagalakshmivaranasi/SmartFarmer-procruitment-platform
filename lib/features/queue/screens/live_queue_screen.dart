@@ -1,87 +1,139 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../models/booking_model.dart';
 import '../../../services/local_database_service.dart';
 import '../../../services/session_service.dart';
-import '../../../models/booking_model.dart';
 import '../../booking/screens/book_slot_step1_crop_screen.dart';
-import '../../booking/screens/quality_report_screen.dart';
 
-class LiveQueueScreen extends StatelessWidget {
+class LiveQueueScreen extends StatefulWidget {
   const LiveQueueScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final farmerId = SessionService.instance.currentUser?.farmerId ?? SessionService.instance.currentUser?.uid;
+  State<LiveQueueScreen> createState() => _LiveQueueScreenState();
+}
 
+class _LiveQueueScreenState extends State<LiveQueueScreen> {
+  final _database = IsarDatabaseService();
+  BookingModel? _activeBooking;
+  int _farmersAhead = 0;
+  int _estimatedWaitMinutes = 0;
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadQueueData();
+  }
+
+  Future<void> _loadQueueData() async {
+    final user = SessionService.instance.currentUser;
+    if (user != null) {
+      final farmerId = user.farmerId ?? user.uid;
+      final activeList = await _database.activeBookingsForFarmer(farmerId);
+
+      if (activeList.isNotEmpty) {
+        final booking = activeList.first;
+        final position = await _database.queuePosition(booking);
+
+        setState(() {
+          _activeBooking = booking;
+          _farmersAhead = position > 0 ? position - 1 : 0;
+          _estimatedWaitMinutes = _farmersAhead * 15;
+          _loading = false;
+        });
+        return;
+      }
+    }
+
+    setState(() {
+      _activeBooking = null;
+      _loading = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Live Queue Status'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
+        title: const Text("Today's Slots"),
+        centerTitle: true,
       ),
-      body: SafeArea(
-        child: farmerId == null
-            ? const Center(child: Text('Sign in to view your queue.'))
-            : FutureBuilder<List<BookingModel>>(
-                future: IsarDatabaseService().farmerBookings(farmerId),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  final bookings = snapshot.data ?? [];
-                  if (bookings.isEmpty) {
-                    return _buildEmptyState(context);
-                  }
-                  final activeBooking = bookings.firstWhere(
-                    (b) => b.status != 'Completed',
-                    orElse: () => bookings.first,
-                  );
-                  return _buildQueue(context, activeBooking);
-                },
-              ),
-      ),
+      body: _loading
+          ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+          : _activeBooking == null
+              ? _buildNoBookingView()
+              : RefreshIndicator(
+                  onRefresh: _loadQueueData,
+                  color: AppColors.primary,
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      children: [
+                        Text(
+                          DateFormat('dd MMMM yyyy').format(DateTime.now()),
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        _buildSlotHeroCard(),
+                        const SizedBox(height: 16),
+                        _buildQueueMetricsCard(),
+                        const SizedBox(height: 24),
+                        _buildCenterInfoCard(),
+                        const SizedBox(height: 32),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: _loadQueueData,
+                            icon: const Icon(Icons.sync, color: Colors.white),
+                            label: const Text('Refresh Queue Status'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
     );
   }
 
-  Widget _buildEmptyState(BuildContext context) {
+  Widget _buildNoBookingView() {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(24.0),
+        padding: const EdgeInsets.all(32.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.event_busy, size: 64, color: AppColors.primary),
-            ),
-            const SizedBox(height: 20),
+            Icon(Icons.hourglass_empty, size: 72, color: Colors.grey.shade400),
+            const SizedBox(height: 16),
             const Text(
-              'No Active Booking Found',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+              'No Active Queue For Today',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
+              ),
             ),
             const SizedBox(height: 8),
             const Text(
-              'You do not have any active procurement slot bookings. Book a slot first to track live queue status and arrival timelines.',
+              'You do not have any procurement slots scheduled for today. Book a slot to join the live gate queue.',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
             ),
             const SizedBox(height: 24),
-            ElevatedButton.icon(
+            ElevatedButton(
               onPressed: () {
-                Navigator.push(
+                Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(builder: (_) => const BookSlotStep1CropScreen()),
                 );
               },
-              icon: const Icon(Icons.calendar_month),
-              label: const Text('Book Procurement Slot Now'),
+              child: const Text('Book Slot Now'),
             ),
           ],
         ),
@@ -89,137 +141,107 @@ class LiveQueueScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildQueue(BuildContext context, BookingModel booking) {
-    return FutureBuilder<int>(
-      future: IsarDatabaseService().queuePosition(booking),
-      builder: (context, posSnapshot) {
-        final pos = posSnapshot.data ?? 1;
-        final vehiclesAhead = pos > 1 ? pos - 1 : 0;
-
-        final isArrived = booking.status == 'Arrived' || booking.status == 'Under Inspection' || booking.status == 'Deal Offered' || booking.status == 'Completed';
-        final isInspected = booking.status == 'Under Inspection' || booking.status == 'Deal Offered' || booking.status == 'Completed';
-        final isCompleted = booking.status == 'Completed';
-
-        return SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
+  Widget _buildSlotHeroCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Active Token Card
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  borderRadius: BorderRadius.circular(16),
+              const Text(
+                'Your Slot',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textSecondary,
                 ),
-                child: Column(
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text(
-                      'YOUR TOKEN NUMBER',
-                      style: TextStyle(
+                    const Icon(Icons.check_circle, size: 14, color: AppColors.primary),
+                    const SizedBox(width: 4),
+                    Text(
+                      _activeBooking!.status,
+                      style: const TextStyle(
                         fontSize: 12,
-                        letterSpacing: 1.2,
-                        color: Colors.white70,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      '#${booking.token}',
-                      style: const TextStyle(
-                        fontSize: 48,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      booking.centreName,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: Colors.white70,
+                        color: AppColors.primary,
                       ),
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(height: 20),
-
-              // Queue Dynamics Summary
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildQueueStatTile(
-                      label: 'Vehicles Ahead',
-                      value: '$vehiclesAhead',
-                      icon: Icons.directions_bus_outlined,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _buildQueueStatTile(
-                      label: 'Slot Time',
-                      value: booking.slotTime,
-                      icon: Icons.timer_outlined,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-
-              // Process Stepper Status
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.border),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Center Progress Flow',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    _buildStepRow('Gate Verification', isArrived ? 'Completed' : 'Pending', isArrived, false),
-                    _buildStepRow('Moisture & Quality Sampling', isInspected ? 'Completed' : (isArrived ? 'In Progress' : 'Pending'), isInspected, false),
-                    _buildStepRow('Weighbridge Entry & Deal Lock', booking.status == 'Deal Offered' ? 'Deal Offered' : (isCompleted ? 'Completed' : 'Pending'), booking.status == 'Deal Offered' || isCompleted, false),
-                    _buildStepRow('Unloading & Receipt', isCompleted ? 'Completed' : 'Pending', isCompleted, true),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const QualityReportScreen(),
-                    ),
-                  );
-                },
-                child: const Text('View Quality Report'),
               ),
             ],
           ),
-        );
-      },
+          const SizedBox(height: 12),
+          Text(
+            _activeBooking!.token,
+            style: const TextStyle(
+              fontSize: 34,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Scheduled Window: ${_activeBooking!.slotTime}',
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildQueueStatTile({
-    required String label,
-    required String value,
-    required IconData icon,
-  }) {
+  Widget _buildQueueMetricsCard() {
     return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        children: [
+          _metricRow(
+            icon: Icons.people_outline,
+            label: 'Farmers Ahead in Slot',
+            value: '$_farmersAhead',
+            valueColor: _farmersAhead == 0 ? AppColors.primary : AppColors.textPrimary,
+          ),
+          const Divider(height: 24, color: AppColors.border),
+          _metricRow(
+            icon: Icons.access_time,
+            label: 'Estimated Waiting Time',
+            value: _farmersAhead == 0 ? 'Ready for Entry' : '$_estimatedWaitMinutes mins',
+            valueColor: _farmersAhead == 0 ? AppColors.primary : AppColors.statusOrange,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCenterInfoCard() {
+    return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -229,72 +251,53 @@ class LiveQueueScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: AppColors.primary, size: 24),
-          const SizedBox(height: 10),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 16,
+          const Text(
+            'Centre Verification Note',
+            style: TextStyle(
+              fontSize: 14,
               fontWeight: FontWeight.bold,
               color: AppColors.textPrimary,
             ),
           ),
-          const SizedBox(height: 2),
+          const SizedBox(height: 8),
           Text(
-            label,
-            style: const TextStyle(
-              fontSize: 12,
-              color: AppColors.textSecondary,
-            ),
+            'Please present your token at ${_activeBooking!.centreName}. Have your physical produce and registered identification ready for evaluation.',
+            style: const TextStyle(fontSize: 13, color: AppColors.textSecondary, height: 1.4),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildStepRow(String title, String subtitle, bool isDone, bool isLast) {
+  Widget _metricRow({
+    required IconData icon,
+    required String label,
+    required String value,
+    required Color valueColor,
+  }) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Column(
-          children: [
-            Icon(
-              isDone ? Icons.check_circle : Icons.radio_button_unchecked,
-              size: 20,
-              color: isDone ? AppColors.primary : AppColors.textSecondary,
-            ),
-            if (!isLast)
-              Container(
-                width: 2,
-                height: 30,
-                color: isDone ? AppColors.primary : AppColors.border,
-              ),
-          ],
-        ),
+        Icon(icon, size: 22, color: AppColors.textSecondary),
         const SizedBox(width: 12),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: isDone ? AppColors.textPrimary : AppColors.textSecondary,
-              ),
+        Expanded(
+          child: Text(
+            label,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: AppColors.textSecondary,
             ),
-            const SizedBox(height: 2),
-            Text(
-              subtitle,
-              style: const TextStyle(
-                fontSize: 12,
-                color: AppColors.textSecondary,
-              ),
-            ),
-            const SizedBox(height: 12),
-          ],
+          ),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: valueColor,
+          ),
         ),
       ],
     );
   }
-}
+}

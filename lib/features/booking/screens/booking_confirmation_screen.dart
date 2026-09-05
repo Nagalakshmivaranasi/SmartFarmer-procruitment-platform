@@ -1,4 +1,4 @@
-import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/theme/app_theme.dart';
@@ -7,8 +7,7 @@ import '../../../models/centre_model.dart';
 import '../../../services/local_database_service.dart';
 import '../../../services/local_notification_service.dart';
 import '../../../services/session_service.dart';
-import 'booking_confirmed_screen.dart';
-
+import '../../farmer_home/screens/booking_confirmed_screen.dart';
 class BookingConfirmationScreen extends StatefulWidget {
   final String crop;
   final double quantityQuintal;
@@ -224,4 +223,4 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
       }),
     );
   }
-}
+}
