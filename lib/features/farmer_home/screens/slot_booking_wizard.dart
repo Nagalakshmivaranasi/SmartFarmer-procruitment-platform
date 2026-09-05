@@ -30,6 +30,10 @@ class _SlotBookingWizardState extends State<SlotBookingWizard> {
   DateTime _selectedDate = DateTime.now().add(const Duration(days: 1));
   String _selectedSlotTime = '10:00 AM - 11:00 AM';
 
+  // Map to store how many bookings exist per slot for the selected date & centre
+  final Map<String, int> _slotCounts = {};
+  bool _isLoadingSlots = false;
+
   final List<String> _crops = const ['Wheat', 'Paddy', 'Gram (Chana)', 'Mustard'];
   final List<Map<String, String>> _centres = const [
     {'id': 'CTR_SHIV_01', 'name': 'Shivpuri Procurement Center'},
@@ -46,9 +50,40 @@ class _SlotBookingWizardState extends State<SlotBookingWizard> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _fetchSlotCounts();
+  }
+
+  @override
   void dispose() {
     _quantityController.dispose();
     super.dispose();
+  }
+
+  Future<void> _fetchSlotCounts() async {
+    setState(() => _isLoadingSlots = true);
+    try {
+      await IsarDatabaseService.initialize();
+      final Map<String, int> counts = {};
+      for (var slot in _slots) {
+        final count = await _database.getSlotBookingCount(
+          centreId: _selectedCentreId,
+          bookingDate: _selectedDate,
+          slotTime: slot,
+        );
+        counts[slot] = count;
+      }
+      if (mounted) {
+        setState(() {
+          _slotCounts.clear();
+          _slotCounts.addAll(counts);
+          _isLoadingSlots = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isLoadingSlots = false);
+    }
   }
 
   String _generateToken() {
@@ -60,6 +95,9 @@ class _SlotBookingWizardState extends State<SlotBookingWizard> {
   void _nextStep(AppLocalizations l10n) {
     if (_currentStep < 4) {
       setState(() => _currentStep++);
+      if (_currentStep == 4) {
+        _fetchSlotCounts();
+      }
     } else {
       _handleCompleteBooking(l10n);
     }
@@ -103,13 +141,14 @@ class _SlotBookingWizardState extends State<SlotBookingWizard> {
         return;
       }
 
+      // Limit: 1 person per slot
       final currentCapacity = await _database.getSlotBookingCount(
         centreId: _selectedCentreId,
         bookingDate: _selectedDate,
         slotTime: _selectedSlotTime,
       );
 
-      if (currentCapacity >= 5) {
+      if (currentCapacity >= 1) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -140,19 +179,18 @@ class _SlotBookingWizardState extends State<SlotBookingWizard> {
 
       await _database.saveBooking(newBooking);
       final farmerPhone = user?.phoneNumber ?? '';
-if (farmerPhone.isNotEmpty) {
-  DirectSmsService.sendSlotConfirmation(
-    phone: farmerPhone,
-    token: newBooking.token,
-    crop: newBooking.crop,
-    quantity: newBooking.quantityQuintal,
-    date: '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
-    timeSlot: _selectedSlotTime,
-  );
-}
+      if (farmerPhone.isNotEmpty) {
+        DirectSmsService.sendSlotConfirmation(
+          phone: farmerPhone,
+          token: newBooking.token,
+          crop: newBooking.crop,
+          quantity: newBooking.quantityQuintal,
+          date: '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
+          timeSlot: _selectedSlotTime,
+        );
+      }
       if (!mounted) return;
 
-      // Direct transition to the Confirmation Success Screen
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
@@ -317,6 +355,7 @@ if (farmerPhone.isNotEmpty) {
               _selectedCentreId = id;
               _selectedCentreName = name;
             });
+            _fetchSlotCounts();
           },
           l10n: l10n,
         );
@@ -326,7 +365,12 @@ if (farmerPhone.isNotEmpty) {
           date: _selectedDate,
           slot: _selectedSlotTime,
           slots: _slots,
-          onDatePicked: (val) => setState(() => _selectedDate = val),
+          slotCounts: _slotCounts,
+          isLoading: _isLoadingSlots,
+          onDatePicked: (val) {
+            setState(() => _selectedDate = val);
+            _fetchSlotCounts();
+          },
           onSlotSelected: (val) => setState(() => _selectedSlotTime = val),
           l10n: l10n,
         );
@@ -501,6 +545,8 @@ class _Step5TimeSlot extends StatelessWidget {
   final DateTime date;
   final String slot;
   final List<String> slots;
+  final Map<String, int> slotCounts;
+  final bool isLoading;
   final ValueChanged<DateTime> onDatePicked;
   final ValueChanged<String> onSlotSelected;
   final AppLocalizations l10n;
@@ -509,6 +555,8 @@ class _Step5TimeSlot extends StatelessWidget {
     required this.date,
     required this.slot,
     required this.slots,
+    required this.slotCounts,
+    required this.isLoading,
     required this.onDatePicked,
     required this.onSlotSelected,
     required this.l10n,
@@ -544,24 +592,105 @@ class _Step5TimeSlot extends StatelessWidget {
           },
         ),
         const SizedBox(height: 20),
-        Text(l10n.availableTimeWindows, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-        const SizedBox(height: 10),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: slots.map((s) {
-            final isSelected = slot == s;
-            return ChoiceChip(
-              label: Text(s),
-              selected: isSelected,
-              selectedColor: AppColors.primary,
-              labelStyle: TextStyle(
-                color: isSelected ? Colors.white : AppColors.textPrimary,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(l10n.availableTimeWindows, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+            if (isLoading)
+              const SizedBox(
+                height: 14,
+                width: 14,
+                child: CircularProgressIndicator(strokeWidth: 2),
               ),
-              onSelected: (_) => onSlotSelected(s),
+          ],
+        ),
+        const SizedBox(height: 10),
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: slots.length,
+          itemBuilder: (context, index) {
+            final s = slots[index];
+            final count = slotCounts[s] ?? 0;
+            final isFilled = count >= 1; // Limit: 1 person per slot
+            final isSelected = slot == s;
+
+            // Visual styling: White if empty, Red if filled
+            Color cardBgColor = Colors.white;
+            Color borderColor = AppColors.border;
+            Color textColor = AppColors.textPrimary;
+            Color badgeBgColor = AppColors.mintGreen.withValues(alpha: 0.5);
+            Color badgeTextColor = AppColors.primary;
+            String statusLabel = 'Available (0/1)';
+            IconData iconData = Icons.access_time_outlined;
+
+            if (isFilled) {
+              cardBgColor = Colors.red.shade50;
+              borderColor = Colors.red.shade300;
+              textColor = Colors.grey.shade600;
+              badgeBgColor = Colors.red.shade100;
+              badgeTextColor = Colors.red.shade700;
+              statusLabel = 'Filled (1/1)';
+              iconData = Icons.block;
+            } else if (isSelected) {
+              cardBgColor = AppColors.mintGreen.withValues(alpha: 0.3);
+              borderColor = AppColors.primary;
+              textColor = AppColors.primary;
+            }
+
+            return GestureDetector(
+              onTap: isFilled ? null : () => onSlotSelected(s),
+              child: Container(
+                margin: const EdgeInsets.only(bottom: 10),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: cardBgColor,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isSelected ? AppColors.primary : borderColor,
+                    width: isSelected ? 1.5 : 1,
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          iconData,
+                          color: isFilled ? Colors.red : (isSelected ? AppColors.primary : Colors.grey),
+                          size: 20,
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          s,
+                          style: TextStyle(
+                            fontWeight: isSelected || isFilled ? FontWeight.bold : FontWeight.normal,
+                            color: textColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: badgeBgColor,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        statusLabel,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: badgeTextColor,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             );
-          }).toList(),
+          },
         ),
       ],
     );

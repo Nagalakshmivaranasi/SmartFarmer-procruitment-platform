@@ -22,6 +22,7 @@ class _OfficerDashboardScreenState extends State<OfficerDashboardScreen> {
   List<BookingModel> _bookings = [];
   bool _isLoading = true;
   int _activeSegment = 0; // 0 = Pending, 1 = Action Needed, 2 = Completed
+  DateTime _selectedPendingDate = DateTime.now(); // Date filter for pending slots
 
   @override
   void initState() {
@@ -69,20 +70,55 @@ class _OfficerDashboardScreenState extends State<OfficerDashboardScreen> {
         s.contains('return');
   }
 
-  List<BookingModel> get _pendingList {
-    return _bookings.where((b) {
+int _parseTimeToMinutes(String timeStr) {
+    if (timeStr.isEmpty) return 0;
+    final lower = timeStr.toLowerCase();
+    try {
+      final regExp = RegExp(r'(\d+)(?::(\d+))?\s*(am|pm)?');
+      final match = regExp.firstMatch(lower);
+      if (match != null) {
+        int hour = int.parse(match.group(1)!);
+        int minute = match.group(2) != null ? int.parse(match.group(2)!) : 0;
+        String? period = match.group(3);
+
+        if (period == 'pm' && hour < 12) hour += 12;
+        if (period == 'am' && hour == 12) hour = 0;
+
+        return hour * 60 + minute;
+      }
+    } catch (_) {}
+    return 0;
+  }
+
+  // 2. Updated _pendingList with chronological time sorting
+List<BookingModel> get _pendingList {
+    final list = _bookings.where((b) {
       final s = _cleanStatus(b).toLowerCase();
       if (_isDeclinedOrRejected(s)) return false;
-      return s == 'slot booked' ||
+      
+      final isPendingStatus = s == 'slot booked' ||
           s == 'arrived at center' ||
           s == 'under inspection';
+      
+      if (!isPendingStatus) return false;
+
+      // Filter by the actual scheduled booking date
+      final bookingDate = b.bookingDate;
+      
+      return bookingDate.year == _selectedPendingDate.year &&
+             bookingDate.month == _selectedPendingDate.month &&
+             bookingDate.day == _selectedPendingDate.day;
     }).toList();
+
+    // Sort chronologically by slot time (10 AM, 11 AM, etc.)
+    list.sort((a, b) => _parseTimeToMinutes(a.slotTime).compareTo(_parseTimeToMinutes(b.slotTime)));
+    
+    return list;
   }
 
   List<BookingModel> get _actionList {
     return _bookings.where((b) {
       final s = _cleanStatus(b).toLowerCase();
-      // Exclude declined or rejected items
       if (_isDeclinedOrRejected(s)) return false;
 
       return s.contains('farmer accepted') ||
@@ -94,7 +130,6 @@ class _OfficerDashboardScreenState extends State<OfficerDashboardScreen> {
   List<BookingModel> get _doneList {
     return _bookings.where((b) {
       final s = _cleanStatus(b).toLowerCase();
-      // Settled payments AND farmer declined/rejected consignments
       return s == 'procurement completed' ||
           s.contains('paid') ||
           _isDeclinedOrRejected(s);
@@ -303,6 +338,59 @@ class _OfficerDashboardScreenState extends State<OfficerDashboardScreen> {
     return 'View';
   }
 
+  Widget _buildDateFilterBar() {
+    if (_activeSegment != 0) return const SizedBox.shrink();
+
+    final formattedDate = '${_selectedPendingDate.day}/${_selectedPendingDate.month}/${_selectedPendingDate.year}';
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.calendar_month, size: 18, color: AppColors.primary),
+              const SizedBox(width: 8),
+              Text(
+                'Date: $formattedDate',
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+              ),
+            ],
+          ),
+          TextButton.icon(
+            onPressed: () async {
+              final picked = await showDatePicker(
+                context: context,
+                initialDate: _selectedPendingDate,
+                firstDate: DateTime(2025),
+                lastDate: DateTime(2030),
+              );
+              if (picked != null) {
+                setState(() {
+                  _selectedPendingDate = picked;
+                });
+              }
+            },
+            icon: const Icon(Icons.edit_calendar, size: 16),
+            label: const Text('Change Date', style: TextStyle(fontSize: 12)),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = SessionService.instance.currentUser;
@@ -481,6 +569,9 @@ class _OfficerDashboardScreenState extends State<OfficerDashboardScreen> {
                     ],
                   ),
                   const SizedBox(height: 18),
+
+                  // Date Filter Bar (Only visible in Pending tab)
+                  _buildDateFilterBar(),
 
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -765,6 +856,6 @@ class _OfficerDashboardScreenState extends State<OfficerDashboardScreen> {
     if (_activeSegment == 2) {
       return 'Completed payouts and declined/returned lots will appear here.';
     }
-    return 'Scheduled farmer slots will appear here upon arrival.';
+    return 'Scheduled slots for this specific date will appear here.';
   }
 }
